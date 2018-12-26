@@ -6,16 +6,20 @@ namespace MyLisp
     {
         static void Main(string[] args)
         {
-            var sourceText = "(+ 1 2)";
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseLine();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
+            while (true)
+            {
+                Console.Write("? ");
+                var sourceText = Console.ReadLine();
+                if (sourceText == "") return;
 
-            var evalulator = new Evaluator();
-            Console.WriteLine(evalulator.Evaluate(boundStatement));
+                var parser = new Parser(sourceText);
+                var statement = parser.ParseLine();
+                var binder = new Binder();
+                var boundStatement = binder.Bind(statement);
 
-            Console.ReadKey(true);
+                var evalulator = new Evaluator();
+                Console.WriteLine(evalulator.Evaluate(boundStatement));
+            }
         }
     }
 }
