@@ -56,30 +56,41 @@ namespace MyLisp
 
         }
 
-        public LineStatement ParseLine()
+        public StatementSyntax ParseLine()
         {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-
-            switch (Current.Kind)
+            switch (Peek(1).Kind)
             {
                 case SyntaxKind.PlusToken:
-                    break;
+                    return ParsePlusCommand();
                 default:
                     //            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
                     break;
             }
-            var command = NextToken().Kind;
 
+            var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
+
+            return null;
+        }
+
+        private PlusStatementSyntax ParsePlusCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.PlusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new PlusStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
+        }
+
+        private ImmutableArray<StatementSyntax>.Builder ParseStatements()
+        {
             var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
             while (Current.Kind != SyntaxKind.CloseParenthesisToken && Current.Kind != SyntaxKind.EndOfFileToken)
             {
                 var statement = ParseStatement();
                 statements.Add(statement);
             }
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
 
-            return new LineStatement(openToken, command, statements.ToImmutable(), endToken);
+            return statements;
         }
 
         private StatementSyntax ParseStatement()

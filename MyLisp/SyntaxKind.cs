@@ -17,6 +17,8 @@
         WhitespaceToken,
         IdentifierToken,
 
-        LetKeyword
+        LetKeyword,
+        PlusCommand,
+        LiteralExpression
     }
 }

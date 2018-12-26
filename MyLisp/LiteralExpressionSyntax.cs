@@ -2,11 +2,23 @@
 {
     internal class LiteralExpressionSyntax : StatementSyntax
     {
-        private SyntaxToken numberToken;
-
-        public LiteralExpressionSyntax(SyntaxToken numberToken)
+        public LiteralExpressionSyntax(SyntaxToken literalToken)
+            : this(literalToken, literalToken.Value)
         {
-            this.numberToken = numberToken;
+            Kind = SyntaxKind.LiteralExpression;
         }
+
+        public LiteralExpressionSyntax(SyntaxToken literalToken, object value)
+        {
+            LiteralToken = literalToken;
+            Value = value;
+            Kind = SyntaxKind.LiteralExpression;
+        }
+
+
+        public SyntaxToken LiteralToken { get; }
+
+        public object Value { get; }
+
     }
 }
