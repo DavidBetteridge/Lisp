@@ -56,7 +56,7 @@ namespace MyLisp
 
         }
 
-        public StatementSyntax ParseLine()
+        public StatementSyntax ParseBracketedStatement()
         {
             switch (Peek(1).Kind)
             {
@@ -97,6 +97,9 @@ namespace MyLisp
         {
             switch (Current.Kind)
             {
+                case SyntaxKind.OpenParenthesisToken:
+                    return ParseBracketedStatement();
+
                 case SyntaxKind.NumberToken:
                     return ParseNumberLiteral();
                 default:

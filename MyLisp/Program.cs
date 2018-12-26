@@ -13,7 +13,7 @@ namespace MyLisp
                 if (sourceText == "") return;
 
                 var parser = new Parser(sourceText);
-                var statement = parser.ParseLine();
+                var statement = parser.ParseBracketedStatement();
                 var binder = new Binder();
                 var boundStatement = binder.Bind(statement);
 
