@@ -7,20 +7,9 @@ namespace MyLisp
         static void Main(string[] args)
         {
             var sourceText = "(+ 1 2)";
-            var lexer = new Lexer(sourceText);
-            SyntaxToken token;
-            do
-            {
-                token = lexer.Lex();
-
-                if (token.Kind != SyntaxKind.WhitespaceToken &&
-                    token.Kind != SyntaxKind.BadToken)
-                {
-                    Console.WriteLine(token.Kind);
-                    //tokens.Add(token);
-                }
-            } while (token.Kind != SyntaxKind.EndOfFileToken);
-
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseLine();
+            Console.WriteLine(statement.Command);
             Console.ReadKey(true);
         }
     }

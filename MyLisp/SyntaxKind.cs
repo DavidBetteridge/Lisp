@@ -2,17 +2,21 @@
 {
     public enum SyntaxKind
     {
-        BadToken,
-        EndOfFileToken,
         PlusToken,
         MinusToken,
         StarToken,
         SlashToken,
+
+        BadToken,
+        EndOfFileToken,
+
         OpenParenthesisToken,
         CloseParenthesisToken,
+
         NumberToken,
         WhitespaceToken,
         IdentifierToken,
+
         LetKeyword
     }
 }
