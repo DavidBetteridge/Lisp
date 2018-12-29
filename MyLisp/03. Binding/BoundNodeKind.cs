@@ -7,5 +7,7 @@
         MinusCommand = 2,
         MultiplyCommand = 3,
         DivideCommand = 4,
+        OnePlusCommand = 5,
+        OneMinusCommand = 6,
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MyLisp
+﻿namespace MyLisp
 {
     class Lexer
     {
@@ -34,6 +32,15 @@ namespace MyLisp
 
             switch (Current)
             {
+                case '1' when Lookahead == '+':
+                    _kind = SyntaxKind.OnePlusToken;
+                    _position += 2;
+                    break;
+
+                case '1' when Lookahead == '-':
+                    _kind = SyntaxKind.OneMinusToken;
+                    _position += 2;
+                    break;
 
                 case '\0':
                     _kind = SyntaxKind.EndOfFileToken;

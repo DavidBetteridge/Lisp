@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace MyLisp
 {
@@ -73,14 +73,66 @@ namespace MyLisp
                 case SyntaxKind.StarToken:
                     return ParseMultiplyCommand();
 
+                case SyntaxKind.OnePlusToken:
+                    return ParseOnePlusCommand();
+
+                case SyntaxKind.OneMinusToken:
+                    return ParseOneMinusCommand();
+
                 default:
-                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
+                    _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     break;
             }
 
             var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
 
             return null;
+        }
+
+        private OnePlusStatementSyntax ParseOnePlusCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.OnePlusToken);
+            var statements = ParseStatements();
+
+            switch (statements.Count)
+            {
+                case 0:
+                    _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1+");
+                    break;
+                case 1:
+                    //All good
+                    break;
+                default:
+                    _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1+");
+                    break;
+            }
+
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new OnePlusStatementSyntax(openToken, command, statements.First(), endToken);
+        }
+
+        private OneMinusStatementSyntax ParseOneMinusCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.OneMinusToken);
+            var statements = ParseStatements();
+
+            switch (statements.Count)
+            {
+                case 0:
+                    _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1-");
+                    break;
+                case 1:
+                    //All good
+                    break;
+                default:
+                    _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1-");
+                    break;
+            }
+
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new OneMinusStatementSyntax(openToken, command, statements.First(), endToken);
         }
 
         private PlusStatementSyntax ParsePlusCommand()

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace MyLisp
 {
@@ -11,6 +12,12 @@ namespace MyLisp
             {
                 case BoundNodeKind.Literal:
                     return ((BoundLiteralExpression)boundStatement).Value;
+
+                case BoundNodeKind.OnePlusCommand:
+                    return EvaluateOnePlusCommand((BoundOnePlusStatement)boundStatement);
+
+                case BoundNodeKind.OneMinusCommand:
+                    return EvaluateOneMinusCommand((BoundOneMinusStatement)boundStatement);
 
                 case BoundNodeKind.PlusCommand:
                     return EvaluatePlusCommand((BoundPlusStatement)boundStatement);
@@ -27,6 +34,18 @@ namespace MyLisp
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private int EvaluateOnePlusCommand(BoundOnePlusStatement boundStatement)
+        {
+            var rhs = (int)Evaluate(boundStatement.BoundStatement);
+            return rhs + 1;
+        }
+
+        private int EvaluateOneMinusCommand(BoundOneMinusStatement boundStatement)
+        {
+            var rhs = (int)Evaluate(boundStatement.BoundStatement);
+            return rhs - 1;
         }
 
         private int EvaluatePlusCommand(BoundPlusStatement boundStatement)

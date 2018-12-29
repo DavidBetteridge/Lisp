@@ -9,6 +9,12 @@ namespace MyLisp
         {
             switch (statement.Kind)
             {
+                case SyntaxKind.OnePlusCommand:
+                    return BindOnePlusStatement((OnePlusStatementSyntax)statement);
+
+                case SyntaxKind.OneMinusCommand:
+                    return BindOneMinusStatement((OneMinusStatementSyntax)statement);
+
                 case SyntaxKind.PlusCommand:
                     return BindPlusStatement((PlusStatementSyntax)statement);
 
@@ -27,6 +33,18 @@ namespace MyLisp
                 default:
                     throw new Exception($"Unexpected syntax {statement.Kind}");
             }
+        }
+
+        private BoundOneMinusStatement BindOneMinusStatement(OneMinusStatementSyntax statement)
+        {
+            var boundStatement = Bind(statement.Statement);
+            return new BoundOneMinusStatement(boundStatement.Type, boundStatement);
+        }
+
+        private BoundOnePlusStatement BindOnePlusStatement(OnePlusStatementSyntax statement)
+        {
+            var boundStatement = Bind(statement.Statement);
+            return new BoundOnePlusStatement(boundStatement.Type, boundStatement);
         }
 
         private BoundLiteralExpression BindLiteralExpression(LiteralExpressionSyntax statement)

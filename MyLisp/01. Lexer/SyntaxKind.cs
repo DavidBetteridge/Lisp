@@ -22,6 +22,10 @@
         LiteralExpression,
         MinusCommand,
         DivideCommand,
-        MultiplyCommand
+        MultiplyCommand,
+        OnePlusToken,
+        OneMinusToken,
+        OnePlusCommand,
+        OneMinusCommand
     }
 }

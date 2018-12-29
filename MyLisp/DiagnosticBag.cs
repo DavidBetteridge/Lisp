@@ -23,5 +23,15 @@ namespace MyLisp
         {
             throw new NotImplementedException();
         }
+
+        internal void ReportTooManyArguments(TextSpan span, SyntaxKind kind, string v)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void ReportTooFewArguments(TextSpan span, SyntaxKind kind, string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
