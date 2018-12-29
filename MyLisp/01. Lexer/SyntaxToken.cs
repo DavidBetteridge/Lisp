@@ -16,5 +16,7 @@
             _text = text;
             Value = value;
         }
+
+        public TextSpan Span => new TextSpan(Position, _text.Length);
     }
 }

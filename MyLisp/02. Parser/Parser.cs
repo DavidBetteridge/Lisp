@@ -6,6 +6,7 @@ namespace MyLisp
 {
     class Parser
     {
+        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private ImmutableArray<SyntaxToken> _tokens;
         private int _position;
         public Parser(string sourceText)
@@ -51,7 +52,7 @@ namespace MyLisp
             if (Current.Kind == kind)
                 return NextToken();
 
-            //            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
+            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new SyntaxToken(kind, Current.Position, null, null);
 
         }
@@ -62,8 +63,18 @@ namespace MyLisp
             {
                 case SyntaxKind.PlusToken:
                     return ParsePlusCommand();
+
+                case SyntaxKind.MinusToken:
+                    return ParseMinusCommand();
+
+                case SyntaxKind.SlashToken:
+                    return ParseDivideCommand();
+
+                case SyntaxKind.StarToken:
+                    return ParseMultiplyCommand();
+
                 default:
-                    //            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
+                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     break;
             }
 
@@ -79,6 +90,33 @@ namespace MyLisp
             var statements = ParseStatements();
             var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
             return new PlusStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
+        }
+
+        private MinusStatementSyntax ParseMinusCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.MinusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new MinusStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
+        }
+
+        private DivideStatementSyntax ParseDivideCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.SlashToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new DivideStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
+        }
+
+        private MultiplyStatementSyntax ParseMultiplyCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.StarToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new MultiplyStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
         }
 
         private ImmutableArray<StatementSyntax>.Builder ParseStatements()
@@ -103,7 +141,7 @@ namespace MyLisp
                 case SyntaxKind.NumberToken:
                     return ParseNumberLiteral();
                 default:
-                    //            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
+                    _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     return null;
             }
         }

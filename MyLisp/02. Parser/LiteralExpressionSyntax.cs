@@ -5,14 +5,12 @@
         public LiteralExpressionSyntax(SyntaxToken literalToken)
             : this(literalToken, literalToken.Value)
         {
-            Kind = SyntaxKind.LiteralExpression;
         }
 
         public LiteralExpressionSyntax(SyntaxToken literalToken, object value)
         {
             LiteralToken = literalToken;
             Value = value;
-            Kind = SyntaxKind.LiteralExpression;
         }
 
 
@@ -20,5 +18,6 @@
 
         public object Value { get; }
 
+        public override SyntaxKind Kind => SyntaxKind.LiteralExpression;
     }
 }

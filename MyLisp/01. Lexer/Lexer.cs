@@ -121,7 +121,7 @@ namespace MyLisp
             var length = _position - _start;
             var text = _text.Substring(_start, length);
             if (!int.TryParse(text, out var value))
-                _diagnostics.ReportInvalidNumber(_text.Substring(_start, length), text, typeof(int));
+                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
 
             _value = value;
             _kind = SyntaxKind.NumberToken;

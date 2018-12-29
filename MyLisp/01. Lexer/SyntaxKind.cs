@@ -19,6 +19,9 @@
 
         LetKeyword,
         PlusCommand,
-        LiteralExpression
+        LiteralExpression,
+        MinusCommand,
+        DivideCommand,
+        MultiplyCommand
     }
 }

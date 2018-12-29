@@ -2,7 +2,7 @@
 
 namespace MyLisp
 {
-    internal class PlusStatementSyntax : StatementSyntax
+    internal class DivideStatementSyntax : StatementSyntax
     {
         private readonly SyntaxToken _openToken;
         private readonly SyntaxToken _command;
@@ -10,14 +10,14 @@ namespace MyLisp
 
         public ImmutableArray<StatementSyntax> Statements { get; }
 
-        public PlusStatementSyntax(SyntaxToken openToken, SyntaxToken command, ImmutableArray<StatementSyntax> statements, SyntaxToken endToken)
+        public override SyntaxKind Kind => SyntaxKind.DivideCommand;
+
+        public DivideStatementSyntax(SyntaxToken openToken, SyntaxToken command, ImmutableArray<StatementSyntax> statements, SyntaxToken endToken)
         {
             _openToken = openToken;
             _command = command;
             Statements = statements;
             _endToken = endToken;
-
-            Kind =  SyntaxKind.PlusCommand;
         }
     }
 }
