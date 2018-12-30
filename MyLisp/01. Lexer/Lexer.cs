@@ -51,7 +51,7 @@
                     _position++;
                     break;
 
-                case '-':
+                case '-' when Lookahead == ' ' || Lookahead == ')':
                     _kind = SyntaxKind.MinusToken;
                     _position++;
                     break;
@@ -75,6 +75,8 @@
                     _kind = SyntaxKind.CloseParenthesisToken;
                     _position++;
                     break;
+
+                case '-':
                 case '0':
                 case '1':
                 case '2':
@@ -122,16 +124,30 @@
 
         private void ReadNumber()
         {
-            while (char.IsDigit(Current))
+            if (Current == '-')
+                _position++;
+
+            while (char.IsDigit(Current) || Current == '.')
                 _position++;
 
             var length = _position - _start;
             var text = _text.Substring(_start, length);
-            if (!int.TryParse(text, out var value))
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
 
-            _value = value;
-            _kind = SyntaxKind.NumberToken;
+            if (int.TryParse(text, out var integerValue))
+            {
+                _value = integerValue;
+                _kind = SyntaxKind.IntegerNumberToken;
+            }
+            else if (double.TryParse(text, out var doubleValue))
+            {
+                _value = doubleValue;
+                _kind = SyntaxKind.FloatingPointNumberToken;
+            }
+            else
+            {
+                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
+            }
+
         }
 
         private void ReadWhiteSpace()

@@ -28,8 +28,11 @@ namespace MyLisp
                 case BoundNodeKind.MultiplyCommand:
                     return EvaluateMultiplyCommand((BoundMultiplyStatement)boundStatement);
 
-                case BoundNodeKind.DivideCommand:
+                case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(int)):
                     return EvaluateDivideCommand((BoundDivideStatement)boundStatement);
+
+                case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(double)):
+                    return EvaluateFloatingPointDivideCommand((BoundDivideStatement)boundStatement);
 
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
@@ -64,9 +67,9 @@ namespace MyLisp
                     return -(int)Evaluate(boundStatement.BoundStatements.First());
 
                 default:
-                    var seed = (int)Evaluate(boundStatement.BoundStatements.First());
-                    var others = boundStatement.BoundStatements.Skip(1);
-                    return others.Aggregate(seed, (running, stat) => running - (int)Evaluate(stat));
+                    var head = (int)Evaluate(boundStatement.BoundStatements.First());
+                    var tail = boundStatement.BoundStatements.Skip(1);
+                    return tail.Aggregate(head, (running, stat) => running - (int)Evaluate(stat));
             }
 
         }
@@ -75,9 +78,9 @@ namespace MyLisp
         {
             if (boundStatement.BoundStatements.Any())
             {
-                var seed = (int)Evaluate(boundStatement.BoundStatements.First());
-                var others = boundStatement.BoundStatements.Skip(1);
-                return others.Aggregate(seed, (running, stat) => running * (int)Evaluate(stat));
+                var head = (int)Evaluate(boundStatement.BoundStatements.First());
+                var tail = boundStatement.BoundStatements.Skip(1);
+                return tail.Aggregate(head, (running, stat) => running * (int)Evaluate(stat));
             }
             else
             {
@@ -87,9 +90,39 @@ namespace MyLisp
 
         private int EvaluateDivideCommand(BoundDivideStatement boundStatement)
         {
-            var seed = (int)Evaluate(boundStatement.BoundStatements.First());
-            var others = boundStatement.BoundStatements.Skip(1);
-            return others.Aggregate(seed, (running, stat) => running / (int)Evaluate(stat));
+            var head = (int)Evaluate(boundStatement.BoundStatements.First());
+            if (boundStatement.BoundStatements.Count() == 1)
+            {
+                return 1 / head;
+            }
+            else
+            {
+                var tail = boundStatement.BoundStatements.Skip(1);
+                return tail.Aggregate(head, (running, stat) => running / (int)Evaluate(stat));
+            }
+        }
+
+        private double EvaluateFloatingPointDivideCommand(BoundDivideStatement boundStatement)
+        {
+            var firstStatement = boundStatement.BoundStatements.First();
+            var head = EvaluateAsDouble(firstStatement);
+            if (boundStatement.BoundStatements.Count() == 1)
+            {
+                return 1 / head;
+            }
+            else
+            {
+                var tail = boundStatement.BoundStatements.Skip(1);
+                return tail.Aggregate(head, (running, stat) => running / EvaluateAsDouble(stat));
+            }
+        }
+
+        private double EvaluateAsDouble(BoundStatement statement)
+        {
+            if (statement.Type == typeof(int))
+                return Convert.ToDouble((int)Evaluate(statement));
+            else
+                return (double)Evaluate(statement);
         }
     }
 }

@@ -74,5 +74,42 @@ namespace MyLisp.test
 
             Assert.Equal(expectedResult, actualResult);
         }
+
+        [Theory]
+        [InlineData("(/ 5.0 2)", 2.5)]
+        [InlineData("(/ 5.0 2.0)", 2.5)]
+        [InlineData("(/ 4.0)", 0.25)]
+        public void TestDoubleDivideOperator(string sourceText, double expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+
+        [Theory]
+        [InlineData("(/ 6 2)", 3)]
+        [InlineData("(/ 5 2)", 2)]
+        [InlineData("(/ 4)", 0)]
+        [InlineData("(/ 25 3 2)", 4)]
+        [InlineData("(/ -17 6)", -2)]
+        public void TestIntegerDivideOperator(string sourceText, int expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
     }
 }

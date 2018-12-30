@@ -85,7 +85,7 @@ namespace MyLisp
             if (boundStatements.All(s => s.Type == typeof(int)))
                 return new BoundDivideStatement(typeof(int), boundStatements);
             else
-                return null;
+                return new BoundDivideStatement(typeof(double), boundStatements);
         }
     }
 }

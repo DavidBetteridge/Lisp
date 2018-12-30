@@ -13,7 +13,8 @@
         OpenParenthesisToken,
         CloseParenthesisToken,
 
-        NumberToken,
+        IntegerNumberToken,
+        FloatingPointNumberToken,
         WhitespaceToken,
         IdentifierToken,
 

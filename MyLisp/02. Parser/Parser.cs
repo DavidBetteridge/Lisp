@@ -190,8 +190,12 @@ namespace MyLisp
                 case SyntaxKind.OpenParenthesisToken:
                     return ParseBracketedStatement();
 
-                case SyntaxKind.NumberToken:
+                case SyntaxKind.IntegerNumberToken:
                     return ParseNumberLiteral();
+
+                case SyntaxKind.FloatingPointNumberToken:
+                    return ParseFloatingPointNumberLiteral();
+
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     return null;
@@ -200,7 +204,13 @@ namespace MyLisp
 
         private StatementSyntax ParseNumberLiteral()
         {
-            var numberToken = MatchToken(SyntaxKind.NumberToken);
+            var numberToken = MatchToken(SyntaxKind.IntegerNumberToken);
+            return new LiteralExpressionSyntax(numberToken);
+        }
+
+        private StatementSyntax ParseFloatingPointNumberLiteral()
+        {
+            var numberToken = MatchToken(SyntaxKind.FloatingPointNumberToken);
             return new LiteralExpressionSyntax(numberToken);
         }
     }
