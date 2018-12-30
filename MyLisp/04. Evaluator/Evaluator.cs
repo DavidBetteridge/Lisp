@@ -55,16 +55,34 @@ namespace MyLisp
 
         private int EvaluateMinusCommand(BoundMinusStatement boundStatement)
         {
-            var seed = (int)Evaluate(boundStatement.BoundStatements.First());
-            var others = boundStatement.BoundStatements.Skip(1);
-            return others.Aggregate(seed, (running, stat) => running - (int)Evaluate(stat));
+            switch (boundStatement.BoundStatements.Count())
+            {
+                case 0:
+                    return 0;
+
+                case 1:
+                    return -(int)Evaluate(boundStatement.BoundStatements.First());
+
+                default:
+                    var seed = (int)Evaluate(boundStatement.BoundStatements.First());
+                    var others = boundStatement.BoundStatements.Skip(1);
+                    return others.Aggregate(seed, (running, stat) => running - (int)Evaluate(stat));
+            }
+
         }
 
         private int EvaluateMultiplyCommand(BoundMultiplyStatement boundStatement)
         {
-            var seed = (int)Evaluate(boundStatement.BoundStatements.First());
-            var others = boundStatement.BoundStatements.Skip(1);
-            return others.Aggregate(seed, (running, stat) => running * (int)Evaluate(stat));
+            if (boundStatement.BoundStatements.Any())
+            {
+                var seed = (int)Evaluate(boundStatement.BoundStatements.First());
+                var others = boundStatement.BoundStatements.Skip(1);
+                return others.Aggregate(seed, (running, stat) => running * (int)Evaluate(stat));
+            }
+            else
+            {
+                return 1;
+            }
         }
 
         private int EvaluateDivideCommand(BoundDivideStatement boundStatement)
