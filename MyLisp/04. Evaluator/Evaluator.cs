@@ -3,10 +3,10 @@ using System.Linq;
 
 namespace MyLisp
 {
-    class Evaluator
+    public class Evaluator
     {
 
-        internal object Evaluate(BoundStatement boundStatement)
+        public object Evaluate(BoundStatement boundStatement)
         {
             switch (boundStatement.BoundNodeKind)
             {

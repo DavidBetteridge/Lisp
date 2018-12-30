@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace MyLisp
 {
-    internal class Binder
+    public class Binder
     {
-        internal BoundStatement Bind(StatementSyntax statement)
+        public BoundStatement Bind(StatementSyntax statement)
         {
             switch (statement.Kind)
             {

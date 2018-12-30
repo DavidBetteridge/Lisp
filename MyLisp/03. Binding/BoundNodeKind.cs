@@ -1,6 +1,6 @@
 ﻿namespace MyLisp
 {
-    internal enum BoundNodeKind
+    public enum BoundNodeKind
     {
         Literal = 0,
         PlusCommand = 1,

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace MyLisp
 {
-    class Parser
+    public class Parser
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private ImmutableArray<SyntaxToken> _tokens;
