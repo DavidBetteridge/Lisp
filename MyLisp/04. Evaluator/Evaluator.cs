@@ -43,17 +43,11 @@ namespace MyLisp
                 case BoundNodeKind.DividendDivisorCommand:
                     return EvaluateDividendDivisorCommand((BoundDividendDivisorStatement)boundStatement);
 
-                case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(int)):
+                case BoundNodeKind.DivideCommand:
                     return EvaluateDivideCommand((BoundDivideStatement)boundStatement);
 
-                case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(double)):
-                    return EvaluateFloatingPointDivideCommand((BoundDivideStatement)boundStatement);
-
-                case BoundNodeKind.ModCommand when (boundStatement.Type == typeof(int)):
+                case BoundNodeKind.ModCommand:
                     return EvaluateModCommand((BoundModStatement)boundStatement);
-
-                case BoundNodeKind.ModCommand when (boundStatement.Type == typeof(double)):
-                    return EvaluateFloatingPointModCommand((BoundModStatement)boundStatement);
 
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
@@ -79,21 +73,24 @@ namespace MyLisp
             }
         }
 
-        private int EvaluateModCommand(BoundModStatement boundStatement)
+        private object EvaluateModCommand(BoundModStatement boundStatement)
         {
-            var lhs = (int)Evaluate(boundStatement.BoundDividendStatement);
-            var rhs = (int)Evaluate(boundStatement.BoundDivisorStatement);
+            var lhs = Evaluate(boundStatement.BoundDividendStatement);
+            var rhs = Evaluate(boundStatement.BoundDivisorStatement);
 
-            return (int)(lhs - rhs * Math.Floor((double)lhs / rhs));
+            if (lhs is double || rhs is double)
+            {
+                var dividend = ForceToDouble(lhs);
+                var divisor = ForceToDouble(rhs);
+
+                return dividend - divisor * Math.Floor(dividend / divisor);
+            }
+            else
+            {
+                return (int)((int)lhs - (int)rhs * Math.Floor((double)(int)lhs / (int)rhs));
+            }
         }
 
-        private double EvaluateFloatingPointModCommand(BoundModStatement boundStatement)
-        {
-            var lhs = Math.Floor(EvaluateAsDouble(boundStatement.BoundDividendStatement));
-            var rhs = EvaluateAsDouble(boundStatement.BoundDivisorStatement);
-
-            return lhs - rhs * Math.Floor(lhs / rhs);
-        }
 
         private int EvaluateDividendDivisorCommand(BoundDividendDivisorStatement boundStatement)
         {
@@ -152,41 +149,44 @@ namespace MyLisp
             }
         }
 
-        private int EvaluateDivideCommand(BoundDivideStatement boundStatement)
+        private object EvaluateDivideCommand(BoundDivideStatement boundStatement)
         {
-            var head = (int)Evaluate(boundStatement.BoundStatements.First());
-            if (boundStatement.BoundStatements.Count() == 1)
+            var evaluated = boundStatement.BoundStatements.Select(Evaluate);
+            var allInts = evaluated.All(v => v is int);
+
+            if (allInts)
             {
-                return 1 / head;
+                var head = (int)evaluated.First();
+                if (evaluated.Count() == 1)
+                {
+                    return 1 / head;
+                }
+                else
+                {
+                    var tail = evaluated.Skip(1);
+                    return tail.Aggregate(head, (running, stat) => running / (int)stat);
+                }
             }
             else
             {
-                var tail = boundStatement.BoundStatements.Skip(1);
-                return tail.Aggregate(head, (running, stat) => running / (int)Evaluate(stat));
+                var head = ForceToDouble(evaluated.First());
+                if (evaluated.Count() == 1)
+                {
+                    return 1 / head;
+                }
+                else
+                {
+                    var tail = evaluated.Skip(1);
+                    return tail.Aggregate(head, (running, stat) => running / ForceToDouble(stat));
+                }
             }
         }
-
-        private double EvaluateFloatingPointDivideCommand(BoundDivideStatement boundStatement)
+        private double ForceToDouble(object value)
         {
-            var firstStatement = boundStatement.BoundStatements.First();
-            var head = EvaluateAsDouble(firstStatement);
-            if (boundStatement.BoundStatements.Count() == 1)
-            {
-                return 1 / head;
-            }
+            if (value is int)
+                return Convert.ToDouble((int)value);
             else
-            {
-                var tail = boundStatement.BoundStatements.Skip(1);
-                return tail.Aggregate(head, (running, stat) => running / EvaluateAsDouble(stat));
-            }
-        }
-
-        private double EvaluateAsDouble(BoundStatement statement)
-        {
-            if (statement.Type == typeof(int))
-                return Convert.ToDouble((int)Evaluate(statement));
-            else
-                return (double)Evaluate(statement);
+                return (double)value;
         }
     }
 }
