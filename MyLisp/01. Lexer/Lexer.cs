@@ -124,6 +124,7 @@
 
         private void ReadNumber()
         {
+            //TODO:  Refactor this so that it keeps eating tokens until it hits either whitespace or )
             if (Current == '-')
                 _position++;
 

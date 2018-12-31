@@ -62,22 +62,22 @@ namespace MyLisp
             switch (Peek(1).Kind)
             {
                 case SyntaxKind.PlusToken:
-                    return ParsePlusCommand();
+                    return ParseCommand(SyntaxKind.PlusToken, SyntaxKind.PlusCommand);
 
                 case SyntaxKind.MinusToken:
-                    return ParseMinusCommand();
+                    return ParseCommand(SyntaxKind.MinusToken, SyntaxKind.MinusCommand);
 
                 case SyntaxKind.SlashToken:
-                    return ParseDivideCommand();
+                    return ParseCommand(SyntaxKind.SlashToken, SyntaxKind.DivideCommand);
 
                 case SyntaxKind.StarToken:
-                    return ParseMultiplyCommand();
+                    return ParseCommand(SyntaxKind.StarToken, SyntaxKind.MultiplyCommand);
 
                 case SyntaxKind.OnePlusToken:
-                    return ParseOnePlusCommand();
+                    return ParseCommand(SyntaxKind.OnePlusToken, SyntaxKind.OnePlusCommand);
 
                 case SyntaxKind.OneMinusToken:
-                    return ParseOneMinusCommand();
+                    return ParseCommand(SyntaxKind.OneMinusToken, SyntaxKind.OneMinusCommand);
 
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
@@ -89,86 +89,14 @@ namespace MyLisp
             return null;
         }
 
-        private OnePlusStatementSyntax ParseOnePlusCommand()
+
+        private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, SyntaxKind commandToken)
         {
             var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.OnePlusToken);
-            var statements = ParseStatements();
-
-            switch (statements.Count)
-            {
-                case 0:
-                    _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1+");
-                    break;
-                case 1:
-                    //All good
-                    break;
-                default:
-                    _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1+");
-                    break;
-            }
-
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new OnePlusStatementSyntax(openToken, command, statements.First(), endToken);
-        }
-
-        private OneMinusStatementSyntax ParseOneMinusCommand()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.OneMinusToken);
-            var statements = ParseStatements();
-
-            switch (statements.Count)
-            {
-                case 0:
-                    _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1-");
-                    break;
-                case 1:
-                    //All good
-                    break;
-                default:
-                    _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1-");
-                    break;
-            }
-
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new OneMinusStatementSyntax(openToken, command, statements.First(), endToken);
-        }
-
-        private PlusStatementSyntax ParsePlusCommand()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.PlusToken);
+            var command = MatchToken(lexedToken);
             var statements = ParseStatements();
             var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new PlusStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
-        }
-
-        private MinusStatementSyntax ParseMinusCommand()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.MinusToken);
-            var statements = ParseStatements();
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new MinusStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
-        }
-
-        private DivideStatementSyntax ParseDivideCommand()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.SlashToken);
-            var statements = ParseStatements();
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new DivideStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
-        }
-
-        private MultiplyStatementSyntax ParseMultiplyCommand()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.StarToken);
-            var statements = ParseStatements();
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new MultiplyStatementSyntax(openToken, command, statements.ToImmutable(), endToken);
+            return new CommandStatementSyntax(openToken, command, statements.ToImmutable(), endToken, commandToken);
         }
 
         private ImmutableArray<StatementSyntax>.Builder ParseStatements()

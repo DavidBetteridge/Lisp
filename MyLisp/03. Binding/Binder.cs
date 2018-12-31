@@ -10,22 +10,22 @@ namespace MyLisp
             switch (statement.Kind)
             {
                 case SyntaxKind.OnePlusCommand:
-                    return BindOnePlusStatement((OnePlusStatementSyntax)statement);
+                    return BindOnePlusStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.OneMinusCommand:
-                    return BindOneMinusStatement((OneMinusStatementSyntax)statement);
+                    return BindOneMinusStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.PlusCommand:
-                    return BindPlusStatement((PlusStatementSyntax)statement);
+                    return BindPlusStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.MinusCommand:
-                    return BindMinusStatement((MinusStatementSyntax)statement);
+                    return BindMinusStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.MultiplyCommand:
-                    return BindMultiplyStatement((MultiplyStatementSyntax)statement);
+                    return BindMultiplyStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.DivideCommand:
-                    return BindDivideStatement((DivideStatementSyntax)statement);
+                    return BindDivideStatement((CommandStatementSyntax)statement);
 
                 case SyntaxKind.LiteralExpression:
                     return BindLiteralExpression((LiteralExpressionSyntax)statement);
@@ -35,15 +35,45 @@ namespace MyLisp
             }
         }
 
-        private BoundOneMinusStatement BindOneMinusStatement(OneMinusStatementSyntax statement)
+        private BoundOneMinusStatement BindOneMinusStatement(CommandStatementSyntax statement)
         {
-            var boundStatement = Bind(statement.Statement);
+            var statements = statement.Statements;
+
+            //switch (statements.Count())
+            //{
+            //    case 0:
+            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1-");
+            //        break;
+            //    case 1:
+            //        //All good
+            //        break;
+            //    default:
+            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1-");
+            //        break;
+            //}
+
+            var boundStatement = Bind(statements.First());
             return new BoundOneMinusStatement(boundStatement.Type, boundStatement);
         }
 
-        private BoundOnePlusStatement BindOnePlusStatement(OnePlusStatementSyntax statement)
+        private BoundOnePlusStatement BindOnePlusStatement(CommandStatementSyntax statement)
         {
-            var boundStatement = Bind(statement.Statement);
+            var statements = statement.Statements;
+
+            //switch (statements.Count())
+            //{
+            //    case 0:
+            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1+");
+            //        break;
+            //    case 1:
+            //        //All good
+            //        break;
+            //    default:
+            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1+");
+            //        break;
+            //}
+
+            var boundStatement = Bind(statements.First());
             return new BoundOnePlusStatement(boundStatement.Type, boundStatement);
         }
 
@@ -52,7 +82,7 @@ namespace MyLisp
             return new BoundLiteralExpression(statement.Value);
         }
 
-        private BoundPlusStatement BindPlusStatement(PlusStatementSyntax statement)
+        private BoundPlusStatement BindPlusStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
             if (boundStatements.All(s => s.Type == typeof(int)))
@@ -61,7 +91,7 @@ namespace MyLisp
                 return null;
         }
 
-        private BoundMinusStatement BindMinusStatement(MinusStatementSyntax statement)
+        private BoundMinusStatement BindMinusStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
             if (boundStatements.All(s => s.Type == typeof(int)))
@@ -70,7 +100,7 @@ namespace MyLisp
                 return null;
         }
 
-        private BoundMultiplyStatement BindMultiplyStatement(MultiplyStatementSyntax statement)
+        private BoundMultiplyStatement BindMultiplyStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
             if (boundStatements.All(s => s.Type == typeof(int)))
@@ -79,7 +109,7 @@ namespace MyLisp
                 return null;
         }
 
-        private BoundDivideStatement BindDivideStatement(DivideStatementSyntax statement)
+        private BoundDivideStatement BindDivideStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
             if (boundStatements.All(s => s.Type == typeof(int)))
