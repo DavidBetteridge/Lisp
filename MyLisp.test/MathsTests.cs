@@ -13,13 +13,7 @@ namespace MyLisp.test
         [InlineData("(1- 12)", 11)]
         public void TestCombinedMathsOperators(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -30,13 +24,7 @@ namespace MyLisp.test
         [InlineData("(+ 1 2 3 4)", 10)]
         public void TestPlusOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -47,13 +35,7 @@ namespace MyLisp.test
         [InlineData("(-)", 0)]
         public void TestMinusOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -64,13 +46,7 @@ namespace MyLisp.test
         [InlineData("(* 1 2 3 4)", 24)]
         public void TestMultiplyOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -81,13 +57,7 @@ namespace MyLisp.test
         [InlineData("(/ 4.0)", 0.25)]
         public void TestDoubleDivideOperator(string sourceText, double expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -101,13 +71,7 @@ namespace MyLisp.test
         [InlineData("(/ -17 6)", -2)]
         public void TestIntegerDivideOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -119,13 +83,7 @@ namespace MyLisp.test
         [InlineData("(% -9 -4)", -1)]
         public void TestDividendDivisorOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -135,13 +93,7 @@ namespace MyLisp.test
         [InlineData("(mod 5.5 2.5)", .5)]
         public void TestFloatingPointModOperator(string sourceText, double expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
@@ -153,32 +105,56 @@ namespace MyLisp.test
         [InlineData("(mod -9 -4)", -1)]
         public void TestIntegerModOperator(string sourceText, int expectedResult)
         {
-            var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
-            var boundStatement = binder.Bind(statement);
-
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
         }
 
         [Theory]
-        [InlineData(@"(defvar x)", 0)]
+        // [InlineData(@"(defvar x)", 0)]
         [InlineData(@"(defvar x 456)", 456)]
-        [InlineData(@"(defvar x 123 ""This is a comment"")", 123)]
+        // [InlineData(@"(defvar x 123 ""This is a comment"")", 123)]
         public void TestDefVarOperator(string sourceText, int expectedResult)
+        {
+            var actualResult = Run(sourceText);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void TestDefVar()
+        {
+            var environment = new Environment();
+
+            RunSingleStatement(environment, "(defvar x 10)");
+            var actualResult = RunSingleStatement(environment, "(+ x 2)");
+
+            Assert.Equal(12, actualResult);
+        }
+
+        private static object Run(string sourceText)
+        {
+            var environment = new Environment();
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder(environment);
+            var boundStatement = binder.Bind(statement);
+
+
+            var evalulator = new Evaluator(environment);
+            var actualResult = evalulator.Evaluate(boundStatement);
+            return actualResult;
+        }
+
+        private static object RunSingleStatement(Environment environment, string sourceText)
         {
             var parser = new Parser(sourceText);
             var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
+            var binder = new Binder(environment);
             var boundStatement = binder.Bind(statement);
+            var evaluator = new Evaluator(environment);
 
-            var evalulator = new Evaluator();
-            var actualResult = evalulator.Evaluate(boundStatement);
-
-            Assert.Equal(expectedResult, actualResult);
+            return evaluator.Evaluate(boundStatement);
         }
     }
 }

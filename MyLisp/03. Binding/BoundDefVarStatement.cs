@@ -4,19 +4,20 @@ namespace MyLisp
 {
     class BoundDefVarStatement : BoundStatement
     {
-        private string name;
-        private object initialValue;
-        private string documentation;
-
-        public BoundDefVarStatement(string name, object initialValue, string documentation)
+        public BoundStatement InitialValue { get; set; }
+        public string Name { get; set; }
+        public string Documentation { get; set; }
+        public BoundDefVarStatement(string name, BoundStatement initialValue, string documentation)
         {
-            this.name = name;
-            this.initialValue = initialValue;
-            this.documentation = documentation;
+            this.Name = name;
+            this.InitialValue = initialValue;
+            this.Documentation = documentation;
         }
 
         public override BoundNodeKind BoundNodeKind => BoundNodeKind.DefVarCommand;
 
-        public override Type Type => initialValue.GetType();
+        public override Type Type => InitialValue.GetType();
+
+
     }
 }

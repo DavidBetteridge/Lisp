@@ -5,11 +5,23 @@ namespace MyLisp
 {
     public class Evaluator
     {
+        private Environment _environment;
+
+        public Evaluator(Environment environment)
+        {
+            _environment = environment;
+        }
 
         public object Evaluate(BoundStatement boundStatement)
         {
             switch (boundStatement.BoundNodeKind)
             {
+                case BoundNodeKind.Identifier:
+                    return EvaluateIdentifier((BoundIdentifierStatement)boundStatement);
+
+                case BoundNodeKind.DefVarCommand:
+                    return EvaluateDefVarCommand((BoundDefVarStatement)boundStatement);
+
                 case BoundNodeKind.Literal:
                     return ((BoundLiteralExpression)boundStatement).Value;
 
@@ -45,6 +57,25 @@ namespace MyLisp
 
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
+            }
+        }
+
+        private object EvaluateIdentifier(BoundIdentifierStatement boundStatement)
+        {
+            return _environment.Read(boundStatement.VariableName);
+        }
+
+        private object EvaluateDefVarCommand(BoundDefVarStatement boundStatement)
+        {
+            if (_environment.IsSet(boundStatement.Name))
+            {
+                return _environment.Read(boundStatement.Name);
+            }
+            else
+            {
+                var value = Evaluate(boundStatement.InitialValue);
+                _environment.Define(boundStatement.Name, value, boundStatement.Documentation);
+                return value;
             }
         }
 

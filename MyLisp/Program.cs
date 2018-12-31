@@ -6,6 +6,7 @@ namespace MyLisp
     {
         static void Main(string[] args)
         {
+            var environment = new Environment();
             while (true)
             {
                 Console.Write("? ");
@@ -14,10 +15,10 @@ namespace MyLisp
 
                 var parser = new Parser(sourceText);
                 var statement = parser.ParseBracketedStatement();
-                var binder = new Binder();
+                var binder = new Binder(environment);
                 var boundStatement = binder.Bind(statement);
 
-                var evalulator = new Evaluator();
+                var evalulator = new Evaluator(environment);
                 Console.WriteLine(evalulator.Evaluate(boundStatement));
             }
         }
