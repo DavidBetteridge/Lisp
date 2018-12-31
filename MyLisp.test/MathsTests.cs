@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace MyLisp.test
@@ -27,6 +28,14 @@ namespace MyLisp.test
             var actualResult = Run(sourceText);
 
             Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Theory]
+        [InlineData("(+ 1.1 2.2)", 3.3)]
+        public void TestFloatingPointPlusOperator(string sourceText, double expectedResult)
+        {
+            var actualResult = (double)Run(sourceText);
+            Assert.Equal(expectedResult, Math.Round(actualResult, 15));
         }
 
         [Theory]

@@ -100,21 +100,33 @@ namespace MyLisp
             return lhs % rhs;
         }
 
-        private int EvaluateOnePlusCommand(BoundOnePlusStatement boundStatement)
+        private object EvaluateOnePlusCommand(BoundOnePlusStatement boundStatement)
         {
-            var rhs = (int)Evaluate(boundStatement.BoundStatement);
-            return rhs + 1;
+            var rhs = Evaluate(boundStatement.BoundStatement);
+            if (rhs is int)
+                return (int)rhs + 1;
+            else
+                return (double)rhs + 1.0;
         }
 
-        private int EvaluateOneMinusCommand(BoundOneMinusStatement boundStatement)
+        private object EvaluateOneMinusCommand(BoundOneMinusStatement boundStatement)
         {
-            var rhs = (int)Evaluate(boundStatement.BoundStatement);
-            return rhs - 1;
+            var rhs = Evaluate(boundStatement.BoundStatement);
+            if (rhs is int)
+                return (int)rhs - 1;
+            else
+                return (double)rhs - 1.0;
         }
 
-        private int EvaluatePlusCommand(BoundPlusStatement boundStatement)
+        private object EvaluatePlusCommand(BoundPlusStatement boundStatement)
         {
-            return boundStatement.BoundStatements.Sum(stat => (int)Evaluate(stat));
+            var evaluated = boundStatement.BoundStatements.Select(Evaluate);
+            var allInts = evaluated.All(v => v is int);
+
+            if (allInts)
+                return evaluated.Sum(stat => (int)stat);
+            else
+                return evaluated.Sum(stat => ForceToDouble(stat));
         }
 
         private int EvaluateMinusCommand(BoundMinusStatement boundStatement)
