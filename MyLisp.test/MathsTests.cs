@@ -42,7 +42,8 @@ namespace MyLisp.test
         [InlineData("(- 10 1 2 3 4)", 0)]
         [InlineData("(- 10)", -10)]
         [InlineData("(-)", 0)]
-        public void TestMinusOperator(string sourceText, int expectedResult)
+        [InlineData("(- 1.1 0.1)", 1.0)]
+        public void TestMinusOperator(string sourceText, object expectedResult)
         {
             var actualResult = Run(sourceText);
 
@@ -53,7 +54,8 @@ namespace MyLisp.test
         [InlineData("(*)", 1)]
         [InlineData("(* 1)", 1)]
         [InlineData("(* 1 2 3 4)", 24)]
-        public void TestMultiplyOperator(string sourceText, int expectedResult)
+        [InlineData("(* 2 1.1)", 2.2)]
+        public void TestMultiplyOperator(string sourceText, object expectedResult)
         {
             var actualResult = Run(sourceText);
 

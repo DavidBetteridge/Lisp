@@ -129,35 +129,71 @@ namespace MyLisp
                 return evaluated.Sum(stat => ForceToDouble(stat));
         }
 
-        private int EvaluateMinusCommand(BoundMinusStatement boundStatement)
+        private object EvaluateMinusCommand(BoundMinusStatement boundStatement)
         {
-            switch (boundStatement.BoundStatements.Count())
+            var evaluated = boundStatement.BoundStatements.Select(Evaluate);
+            var allInts = evaluated.All(v => v is int);
+
+            if (allInts)
             {
-                case 0:
-                    return 0;
-
-                case 1:
-                    return -(int)Evaluate(boundStatement.BoundStatements.First());
-
-                default:
-                    var head = (int)Evaluate(boundStatement.BoundStatements.First());
-                    var tail = boundStatement.BoundStatements.Skip(1);
-                    return tail.Aggregate(head, (running, stat) => running - (int)Evaluate(stat));
-            }
-
-        }
-
-        private int EvaluateMultiplyCommand(BoundMultiplyStatement boundStatement)
-        {
-            if (boundStatement.BoundStatements.Any())
-            {
-                var head = (int)Evaluate(boundStatement.BoundStatements.First());
-                var tail = boundStatement.BoundStatements.Skip(1);
-                return tail.Aggregate(head, (running, stat) => running * (int)Evaluate(stat));
+                switch (evaluated.Count())
+                {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return -(int)evaluated.First();
+                    default:
+                        var head = (int)evaluated.First();
+                        var tail = evaluated.Skip(1);
+                        return tail.Aggregate(head, (running, stat) => running - (int)stat);
+                }
             }
             else
             {
-                return 1;
+                switch (evaluated.Count())
+                {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return -(double)evaluated.First();
+                    default:
+                        var head = ForceToDouble(evaluated.First());
+                        var tail = evaluated.Skip(1);
+                        return tail.Aggregate(head, (running, stat) => running - ForceToDouble(stat));
+                }
+            }
+        }
+
+        private object EvaluateMultiplyCommand(BoundMultiplyStatement boundStatement)
+        {
+            var evaluated = boundStatement.BoundStatements.Select(Evaluate);
+            var allInts = evaluated.All(v => v is int);
+
+            if (allInts)
+            {
+                if (evaluated.Any())
+                {
+                    var head = (int)evaluated.First();
+                    var tail = evaluated.Skip(1);
+                    return tail.Aggregate(head, (running, stat) => running * (int)stat);
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else
+            {
+                if (evaluated.Any())
+                {
+                    var head = ForceToDouble(evaluated.First());
+                    var tail = evaluated.Skip(1);
+                    return tail.Aggregate(head, (running, stat) => running * ForceToDouble(stat));
+                }
+                else
+                {
+                    return 1;
+                }
             }
         }
 
