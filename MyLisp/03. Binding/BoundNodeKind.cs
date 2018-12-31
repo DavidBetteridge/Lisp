@@ -9,6 +9,7 @@
         DivideCommand = 4,
         OnePlusCommand = 5,
         OneMinusCommand = 6,
-        DividendDivisorCommand = 7
+        DividendDivisorCommand = 7,
+        ModCommand = 8
     }
 }

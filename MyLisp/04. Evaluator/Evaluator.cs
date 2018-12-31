@@ -37,9 +37,31 @@ namespace MyLisp
                 case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(double)):
                     return EvaluateFloatingPointDivideCommand((BoundDivideStatement)boundStatement);
 
+                case BoundNodeKind.ModCommand when (boundStatement.Type == typeof(int)):
+                    return EvaluateModCommand((BoundModStatement)boundStatement);
+
+                case BoundNodeKind.ModCommand when (boundStatement.Type == typeof(double)):
+                    return EvaluateFloatingPointModCommand((BoundModStatement)boundStatement);
+
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private int EvaluateModCommand(BoundModStatement boundStatement)
+        {
+            var lhs = (int)Evaluate(boundStatement.BoundDividendStatement);
+            var rhs = (int)Evaluate(boundStatement.BoundDivisorStatement);
+
+            return (int)(lhs - rhs * Math.Floor((double)lhs / rhs));
+        }
+
+        private double EvaluateFloatingPointModCommand(BoundModStatement boundStatement)
+        {
+            var lhs = Math.Floor(EvaluateAsDouble(boundStatement.BoundDividendStatement));
+            var rhs = EvaluateAsDouble(boundStatement.BoundDivisorStatement);
+
+            return lhs - rhs * Math.Floor(lhs / rhs);
         }
 
         private int EvaluateDividendDivisorCommand(BoundDividendDivisorStatement boundStatement)

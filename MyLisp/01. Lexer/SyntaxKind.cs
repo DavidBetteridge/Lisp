@@ -29,6 +29,8 @@
         OnePlusCommand,
         OneMinusCommand,
         PercentToken,
-        DividendDivisorCommand
+        DividendDivisorCommand,
+        ModKeyword,
+        ModCommand
     }
 }

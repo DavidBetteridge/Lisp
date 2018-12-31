@@ -10,6 +10,8 @@ namespace MyLisp
             {
                 case "let":
                     return SyntaxKind.LetKeyword;
+                case "mod":
+                    return SyntaxKind.ModKeyword;
                 default:
                     return SyntaxKind.IdentifierToken;
             }

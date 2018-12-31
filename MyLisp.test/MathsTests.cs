@@ -129,5 +129,39 @@ namespace MyLisp.test
 
             Assert.Equal(expectedResult, actualResult);
         }
+
+
+        [Theory]
+        [InlineData("(mod 5.5 2.5)", .5)]
+        public void TestFloatingPointModOperator(string sourceText, double expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Theory]
+        [InlineData("(mod 9 4)", 1)]
+        [InlineData("(mod -9 4)", 3)]
+        [InlineData("(mod 9 -4)", -3)]
+        [InlineData("(mod -9 -4)", -1)]
+        public void TestIntegerModOperator(string sourceText, int expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
     }
 }
