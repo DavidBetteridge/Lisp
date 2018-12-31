@@ -51,6 +51,11 @@
                     _position++;
                     break;
 
+                case '%':
+                    _kind = SyntaxKind.PercentToken;
+                    _position++;
+                    break;
+
                 case '-' when Lookahead == ' ' || Lookahead == ')':
                     _kind = SyntaxKind.MinusToken;
                     _position++;

@@ -79,6 +79,9 @@ namespace MyLisp
                 case SyntaxKind.OneMinusToken:
                     return ParseCommand(SyntaxKind.OneMinusToken, SyntaxKind.OneMinusCommand);
 
+                case SyntaxKind.PercentToken:
+                    return ParseCommand(SyntaxKind.PercentToken, SyntaxKind.DividendDivisorCommand);
+
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     break;

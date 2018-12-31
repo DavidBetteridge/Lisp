@@ -111,5 +111,23 @@ namespace MyLisp.test
 
             Assert.Equal(expectedResult, actualResult);
         }
+
+        [Theory]
+        [InlineData("(% 9 4)", 1)]
+        [InlineData("(% -9 4)", -1)]
+        [InlineData("(% 9 -4)", 1)]
+        [InlineData("(% -9 -4)", -1)]
+        public void TestDividendDivisorOperator(string sourceText, int expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
     }
 }

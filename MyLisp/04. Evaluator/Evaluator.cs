@@ -28,6 +28,9 @@ namespace MyLisp
                 case BoundNodeKind.MultiplyCommand:
                     return EvaluateMultiplyCommand((BoundMultiplyStatement)boundStatement);
 
+                case BoundNodeKind.DividendDivisorCommand:
+                    return EvaluateDividendDivisorCommand((BoundDividendDivisorStatement)boundStatement);
+
                 case BoundNodeKind.DivideCommand when (boundStatement.Type == typeof(int)):
                     return EvaluateDivideCommand((BoundDivideStatement)boundStatement);
 
@@ -37,6 +40,14 @@ namespace MyLisp
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private int EvaluateDividendDivisorCommand(BoundDividendDivisorStatement boundStatement)
+        {
+            var lhs = (int)Evaluate(boundStatement.BoundDividendStatement);
+            var rhs = (int)Evaluate(boundStatement.BoundDivisorStatement);
+
+            return lhs % rhs;
         }
 
         private int EvaluateOnePlusCommand(BoundOnePlusStatement boundStatement)

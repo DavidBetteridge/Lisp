@@ -27,6 +27,9 @@ namespace MyLisp
                 case SyntaxKind.DivideCommand:
                     return BindDivideStatement((CommandStatementSyntax)statement);
 
+                case SyntaxKind.DividendDivisorCommand:
+                    return BindDividendDivisorStatement((CommandStatementSyntax)statement);
+
                 case SyntaxKind.LiteralExpression:
                     return BindLiteralExpression((LiteralExpressionSyntax)statement);
 
@@ -34,6 +37,8 @@ namespace MyLisp
                     throw new Exception($"Unexpected syntax {statement.Kind}");
             }
         }
+
+
 
         private BoundOneMinusStatement BindOneMinusStatement(CommandStatementSyntax statement)
         {
@@ -107,6 +112,32 @@ namespace MyLisp
                 return new BoundMultiplyStatement(typeof(int), boundStatements);
             else
                 return null;
+        }
+
+        private BoundDividendDivisorStatement BindDividendDivisorStatement(CommandStatementSyntax statement)
+        {
+            //switch (statements.Count())
+            //{
+            //    case 0:
+            //    case 1:
+            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "%");
+            //        break;
+            //    case 2:
+            //        //All good
+            //        break;
+            //    default:
+            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "%");
+            //        break;
+            //}
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
+            if (boundStatements.All(s => s.Type == typeof(int)))
+            {
+                var lhs = boundStatements[0];
+                var rhs = boundStatements[1];
+                return new BoundDividendDivisorStatement(typeof(int), lhs, rhs);
+            }
+
+            return null;
         }
 
         private BoundDivideStatement BindDivideStatement(CommandStatementSyntax statement)
