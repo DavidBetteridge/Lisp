@@ -100,7 +100,7 @@ namespace MyLisp
             //}
 
             var boundStatement = Bind(statements.First());
-            return new BoundOneMinusStatement(boundStatement.Type, boundStatement);
+            return new BoundOneMinusStatement(boundStatement);
         }
 
         private BoundOnePlusStatement BindOnePlusStatement(CommandStatementSyntax statement)
@@ -121,7 +121,7 @@ namespace MyLisp
             //}
 
             var boundStatement = Bind(statements.First());
-            return new BoundOnePlusStatement(boundStatement.Type, boundStatement);
+            return new BoundOnePlusStatement(boundStatement);
         }
 
         private BoundLiteralExpression BindLiteralExpression(LiteralExpressionSyntax statement)
@@ -132,28 +132,19 @@ namespace MyLisp
         private BoundPlusStatement BindPlusStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
-            if (boundStatements.All(s => s.Type == typeof(int)))
-                return new BoundPlusStatement(typeof(int), boundStatements);
-            else
-                return null;
+            return new BoundPlusStatement(boundStatements);
         }
 
         private BoundMinusStatement BindMinusStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
-            if (boundStatements.All(s => s.Type == typeof(int)))
-                return new BoundMinusStatement(typeof(int), boundStatements);
-            else
-                return null;
+            return new BoundMinusStatement(boundStatements);
         }
 
         private BoundMultiplyStatement BindMultiplyStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
-            if (boundStatements.All(s => s.Type == typeof(int)))
-                return new BoundMultiplyStatement(typeof(int), boundStatements);
-            else
-                return null;
+            return new BoundMultiplyStatement(boundStatements);
         }
 
         private BoundDividendDivisorStatement BindDividendDivisorStatement(CommandStatementSyntax statement)
@@ -172,14 +163,9 @@ namespace MyLisp
             //        break;
             //}
             var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
-            if (boundStatements.All(s => s.Type == typeof(int)))
-            {
-                var lhs = boundStatements[0];
-                var rhs = boundStatements[1];
-                return new BoundDividendDivisorStatement(typeof(int), lhs, rhs);
-            }
-
-            return null;
+            var lhs = boundStatements[0];
+            var rhs = boundStatements[1];
+            return new BoundDividendDivisorStatement(lhs, rhs);
         }
 
 
@@ -202,19 +188,13 @@ namespace MyLisp
             var lhs = boundStatements[0];
             var rhs = boundStatements[1];
 
-            if (boundStatements.All(s => s.Type == typeof(int)))
-                return new BoundModStatement(typeof(int), lhs, rhs);
-            else
-                return new BoundModStatement(typeof(double), lhs, rhs);
+            return new BoundModStatement(lhs, rhs);
         }
 
         private BoundDivideStatement BindDivideStatement(CommandStatementSyntax statement)
         {
             var boundStatements = statement.Statements.Select(stat => Bind(stat));
-            if (boundStatements.All(s => s.Type == typeof(int)))
-                return new BoundDivideStatement(typeof(int), boundStatements);
-            else
-                return new BoundDivideStatement(typeof(double), boundStatements);
+            return new BoundDivideStatement(boundStatements);
         }
     }
 }

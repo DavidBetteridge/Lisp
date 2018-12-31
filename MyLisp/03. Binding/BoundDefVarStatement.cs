@@ -16,8 +16,5 @@ namespace MyLisp
 
         public override BoundNodeKind BoundNodeKind => BoundNodeKind.DefVarCommand;
 
-        public override Type Type => InitialValue.GetType();
-
-
     }
 }
