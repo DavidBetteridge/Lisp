@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -85,6 +86,9 @@ namespace MyLisp
                 case SyntaxKind.ModKeyword:
                     return ParseCommand(SyntaxKind.ModKeyword, SyntaxKind.ModCommand);
 
+                case SyntaxKind.DefVarKeyword:
+                    return ParseCommand(SyntaxKind.DefVarKeyword, SyntaxKind.DefVarCommand);
+
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     break;
@@ -130,10 +134,19 @@ namespace MyLisp
                 case SyntaxKind.FloatingPointNumberToken:
                     return ParseFloatingPointNumberLiteral();
 
+                case SyntaxKind.IdentifierToken:
+                    return ParseIdentifier();
+
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     return null;
             }
+        }
+
+        private StatementSyntax ParseIdentifier()
+        {
+            var token = MatchToken(SyntaxKind.IdentifierToken);
+            return new IdentifierSyntax(token);
         }
 
         private StatementSyntax ParseNumberLiteral()

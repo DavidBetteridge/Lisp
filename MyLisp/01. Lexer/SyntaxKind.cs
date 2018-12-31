@@ -31,6 +31,9 @@
         PercentToken,
         DividendDivisorCommand,
         ModKeyword,
-        ModCommand
+        ModCommand,
+        DefVarKeyword,
+        DefVarCommand,
+        IdentifierExpression
     }
 }

@@ -163,5 +163,22 @@ namespace MyLisp.test
 
             Assert.Equal(expectedResult, actualResult);
         }
+
+        [Theory]
+        [InlineData(@"(defvar x)", 0)]
+        [InlineData(@"(defvar x 456)", 456)]
+        [InlineData(@"(defvar x 123 ""This is a comment"")", 123)]
+        public void TestDefVarOperator(string sourceText, int expectedResult)
+        {
+            var parser = new Parser(sourceText);
+            var statement = parser.ParseBracketedStatement();
+            var binder = new Binder();
+            var boundStatement = binder.Bind(statement);
+
+            var evalulator = new Evaluator();
+            var actualResult = evalulator.Evaluate(boundStatement);
+
+            Assert.Equal(expectedResult, actualResult);
+        }
     }
 }

@@ -172,6 +172,7 @@
 
             var length = _position - _start;
             var text = _text.Substring(_start, length);
+            _value = text; 
             _kind = SyntaxFacts.GetKeywordKind(text);
         }
     }

@@ -8,6 +8,8 @@ namespace MyLisp
         {
             switch (text)
             {
+                case "defvar":
+                    return SyntaxKind.DefVarKeyword;
                 case "let":
                     return SyntaxKind.LetKeyword;
                 case "mod":

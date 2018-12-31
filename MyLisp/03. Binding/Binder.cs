@@ -5,6 +5,7 @@ namespace MyLisp
 {
     public class Binder
     {
+        private Environment _environment = new Environment();
         public BoundStatement Bind(StatementSyntax statement)
         {
             switch (statement.Kind)
@@ -30,6 +31,9 @@ namespace MyLisp
                 case SyntaxKind.DividendDivisorCommand:
                     return BindDividendDivisorStatement((CommandStatementSyntax)statement);
 
+                case SyntaxKind.DefVarCommand:
+                    return BindDefVarStatement((CommandStatementSyntax)statement);
+
                 case SyntaxKind.ModCommand:
                     return BindModStatement((CommandStatementSyntax)statement);
 
@@ -41,6 +45,22 @@ namespace MyLisp
             }
         }
 
+        private BoundDefVarStatement BindDefVarStatement(CommandStatementSyntax statement)
+        {
+            var name = (string)((IdentifierSyntax)statement.Statements[0]).Value;
+
+            object initialValue = null;
+            if (statement.Statements.Count() > 1)
+                initialValue = statement.Statements[1];
+
+            string documentation = "";
+            //if (statement.Statements.Count() > 2)
+            //    documentation = statement.Statements[2];
+
+            _environment.Define(name, initialValue, documentation);
+
+            return new BoundDefVarStatement(name, initialValue, documentation);
+        }
 
         private BoundOneMinusStatement BindOneMinusStatement(CommandStatementSyntax statement)
         {

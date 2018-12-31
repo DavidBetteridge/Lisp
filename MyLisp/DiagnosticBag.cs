@@ -21,7 +21,7 @@ namespace MyLisp
 
         internal void ReportUnexpectedToken(TextSpan span, SyntaxKind kind)
         {
-            throw new NotImplementedException();
+            throw new Exception("ReportUnexpectedToken " + kind);
         }
 
         internal void ReportTooManyArguments(TextSpan span, SyntaxKind kind, string v)
