@@ -89,6 +89,8 @@ namespace MyLisp
                 case SyntaxKind.DefVarKeyword:
                     return ParseCommand(SyntaxKind.DefVarKeyword, SyntaxKind.DefVarCommand);
 
+                case SyntaxKind.DefFunKeyword:
+                    return ParseFunction();
                 default:
                     _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
                     break;
@@ -99,7 +101,32 @@ namespace MyLisp
             return null;
         }
 
+        private FunctionSyntax ParseFunction()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.DefFunKeyword);
+            var functionName = MatchToken(SyntaxKind.IdentifierToken);
 
+            var parameterOpenToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var parameters = new List<SyntaxToken>();
+            while (Current.Kind != SyntaxKind.CloseParenthesisToken)
+            {
+                var parameter = MatchToken(SyntaxKind.IdentifierToken);
+                parameters.Add(parameter);
+            }
+            var parameterCloseToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+
+
+            var body = ParseBracketedStatement();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+
+            return new FunctionSyntax(openToken, 
+                                      command,
+                                      functionName,
+                                      parameters, 
+                                      body,
+                                      endToken);
+        }
         private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, SyntaxKind commandToken)
         {
             var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);

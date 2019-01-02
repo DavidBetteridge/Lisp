@@ -6,6 +6,7 @@ namespace MyLisp
     public class Environment
     {
         private readonly Dictionary<string, Variable> _variables = new Dictionary<string, Variable>();
+        private readonly Dictionary<string, Function> _functions = new Dictionary<string, Function>();
 
         public void Define(string name, object value, string documentation)
         {
@@ -33,6 +34,13 @@ namespace MyLisp
             public string Documentation { get; set; }
         }
 
+        struct Function
+        {
+            public string Name { get; set; }
+            public IEnumerable<string> Parameters { get; set; }
+            public StatementSyntax Body { get; set; }
+        }
+
         internal object Read(string name)
         {
             _variables.TryGetValue(name, out var value);
@@ -48,6 +56,18 @@ namespace MyLisp
         {
             _variables.TryGetValue(name, out var value);
             return value.Value?.GetType();
+        }
+
+        internal void DefineFunction(string name, IEnumerable<string> parameters, StatementSyntax body)
+        {
+            var function = new Function()
+            {
+                Name = name,
+                Parameters = parameters,
+                Body = body
+            };
+
+            _functions[name] = function;
         }
     }
 }

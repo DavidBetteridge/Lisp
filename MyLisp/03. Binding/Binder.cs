@@ -39,6 +39,9 @@ namespace MyLisp
                 case SyntaxKind.DefVarCommand:
                     return BindDefVarStatement((CommandStatementSyntax)statement);
 
+                case SyntaxKind.DefFunCommand:
+                    return BindDefFunStatement((FunctionSyntax)statement);
+
                 case SyntaxKind.ModCommand:
                     return BindModStatement((CommandStatementSyntax)statement);
 
@@ -51,6 +54,15 @@ namespace MyLisp
                 default:
                     throw new Exception($"Unexpected syntax {statement.Kind}");
             }
+        }
+
+        private BoundFunctionStatement BindDefFunStatement(FunctionSyntax statement)
+        {
+            var functionName = statement.FunctionName;
+            var parameters = statement.Parameters;
+            var body = statement.Body;
+
+            return new BoundFunctionStatement(functionName, parameters, body);
         }
 
         private BoundIdentifierStatement BindIdentifier(IdentifierSyntax statement)

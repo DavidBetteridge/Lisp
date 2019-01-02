@@ -12,6 +12,7 @@
         DividendDivisorCommand = 7,
         ModCommand = 8,
         DefVarCommand = 9,
-        Identifier = 10
+        Identifier = 10,
+        DefFunCommand = 11
     }
 }

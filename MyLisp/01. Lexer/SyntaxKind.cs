@@ -34,6 +34,8 @@
         ModCommand,
         DefVarKeyword,
         DefVarCommand,
-        IdentifierExpression
+        IdentifierExpression,
+        DefFunKeyword,
+        DefFunCommand
     }
 }

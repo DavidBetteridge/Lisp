@@ -22,6 +22,9 @@ namespace MyLisp
                 case BoundNodeKind.DefVarCommand:
                     return EvaluateDefVarCommand((BoundDefVarStatement)boundStatement);
 
+                case BoundNodeKind.DefFunCommand:
+                    return EvaluateDefFunCommand((BoundFunctionStatement)boundStatement);
+
                 case BoundNodeKind.Literal:
                     return ((BoundLiteralExpression)boundStatement).Value;
 
@@ -52,6 +55,17 @@ namespace MyLisp
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private object EvaluateDefFunCommand(BoundFunctionStatement boundStatement)
+        {
+            var name = (string)boundStatement.FunctionName.Value;
+            var parameters = boundStatement.Parameters.Select(parm => (string)parm.Value);
+            var body = boundStatement.Body;
+
+            _environment.DefineFunction(name, parameters, body);
+
+            return name;
         }
 
         private object EvaluateIdentifier(BoundIdentifierStatement boundStatement)
