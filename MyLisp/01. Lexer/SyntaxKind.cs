@@ -36,6 +36,7 @@
         DefVarCommand,
         IdentifierExpression,
         DefFunKeyword,
-        DefFunCommand
+        DefFunCommand,
+        FunctionCall
     }
 }

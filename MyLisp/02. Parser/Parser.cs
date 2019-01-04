@@ -89,10 +89,13 @@ namespace MyLisp
                 case SyntaxKind.DefVarKeyword:
                     return ParseCommand(SyntaxKind.DefVarKeyword, SyntaxKind.DefVarCommand);
 
+                case SyntaxKind.IdentifierToken:
+                    return ParseCommand(SyntaxKind.IdentifierToken, SyntaxKind.FunctionCall);
+
                 case SyntaxKind.DefFunKeyword:
                     return ParseFunction();
                 default:
-                    _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
+                    _diagnostics.ReportUnexpectedToken(Peek(1).Span, Peek(1).Kind);
                     break;
             }
 

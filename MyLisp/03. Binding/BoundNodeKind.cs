@@ -13,6 +13,7 @@
         ModCommand = 8,
         DefVarCommand = 9,
         Identifier = 10,
-        DefFunCommand = 11
+        DefFunCommand = 11,
+        FunctionCall=12
     }
 }

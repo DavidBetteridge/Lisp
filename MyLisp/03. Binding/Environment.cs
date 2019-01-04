@@ -34,11 +34,11 @@ namespace MyLisp
             public string Documentation { get; set; }
         }
 
-        struct Function
+        public struct Function
         {
             public string Name { get; set; }
             public IEnumerable<string> Parameters { get; set; }
-            public StatementSyntax Body { get; set; }
+            public BoundStatement Body { get; set; }
         }
 
         internal object Read(string name)
@@ -58,7 +58,7 @@ namespace MyLisp
             return value.Value?.GetType();
         }
 
-        internal void DefineFunction(string name, IEnumerable<string> parameters, StatementSyntax body)
+        internal void DefineFunction(string name, IEnumerable<string> parameters, BoundStatement body)
         {
             var function = new Function()
             {
@@ -68,6 +68,11 @@ namespace MyLisp
             };
 
             _functions[name] = function;
+        }
+
+        internal Function GetFunction(string functionName)
+        {
+            return _functions[functionName];
         }
     }
 }

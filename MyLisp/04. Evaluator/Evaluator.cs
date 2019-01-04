@@ -16,6 +16,9 @@ namespace MyLisp
         {
             switch (boundStatement.BoundNodeKind)
             {
+                case BoundNodeKind.FunctionCall:
+                    return EvaluateFunctionCall((BoundFunctionCallStatement)boundStatement);
+
                 case BoundNodeKind.Identifier:
                     return EvaluateIdentifier((BoundIdentifierStatement)boundStatement);
 
@@ -55,6 +58,27 @@ namespace MyLisp
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private object EvaluateFunctionCall(BoundFunctionCallStatement boundStatement)
+        {
+            var currentEnvironment = _environment;
+            var functionCall = _environment.GetFunction(boundStatement.FunctionName);
+            var arguments = functionCall.Parameters
+                                .Zip(boundStatement.Args, (name, value) => (name, Evaluate(value)))
+                                .ToArray();
+
+            _environment = new Environment();
+            foreach (var (name,value) in arguments)
+            {
+                _environment.Define(name, value, "");
+            }
+
+            var result = Evaluate(functionCall.Body);
+
+            _environment = currentEnvironment;
+
+            return result;
         }
 
         private object EvaluateDefFunCommand(BoundFunctionStatement boundStatement)

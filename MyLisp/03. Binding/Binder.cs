@@ -5,16 +5,13 @@ namespace MyLisp
 {
     public class Binder
     {
-        private Environment _environment;
-
-        public Binder(Environment environment)
-        {
-            _environment = environment;
-        }
         public BoundStatement Bind(StatementSyntax statement)
         {
             switch (statement.Kind)
             {
+                case SyntaxKind.FunctionCall:
+                    return BindFunctionCall((CommandStatementSyntax)statement);
+
                 case SyntaxKind.OnePlusCommand:
                     return BindOnePlusStatement((CommandStatementSyntax)statement);
 
@@ -56,11 +53,19 @@ namespace MyLisp
             }
         }
 
+        private BoundFunctionCallStatement BindFunctionCall(CommandStatementSyntax statement)
+        {
+            var functionName = (string)statement.Command.Value;
+            var args = statement.Statements.Select(Bind);
+
+            return new BoundFunctionCallStatement(functionName, args);
+        }
+
         private BoundFunctionStatement BindDefFunStatement(FunctionSyntax statement)
         {
             var functionName = statement.FunctionName;
             var parameters = statement.Parameters;
-            var body = statement.Body;
+            var body = Bind(statement.Body);
 
             return new BoundFunctionStatement(functionName, parameters, body);
         }
@@ -68,8 +73,8 @@ namespace MyLisp
         private BoundIdentifierStatement BindIdentifier(IdentifierSyntax statement)
         {
             var variableName = (string)statement.Value;
-            if (!_environment.IsDefined(variableName))
-                throw new Exception($"The variable {variableName} has not been defined.");
+            //if (!_environment.IsDefined(variableName))
+            //    throw new Exception($"The variable {variableName} has not been defined.");
 
             //var type = _environment.ReadType(variableName);
             var type = typeof(int);
@@ -89,7 +94,7 @@ namespace MyLisp
             //if (statement.Statements.Count() > 2)
             //    documentation = statement.Statements[2];
 
-            _environment.Define(name, null, documentation);
+            //_environment.Define(name, null, documentation);
 
             return new BoundDefVarStatement(name, initialValue, documentation);
         }

@@ -148,7 +148,7 @@ namespace MyLisp.test
             var environment = new Environment();
             var parser = new Parser(sourceText);
             var statement = parser.ParseBracketedStatement();
-            var binder = new Binder(environment);
+            var binder = new Binder();
             var boundStatement = binder.Bind(statement);
 
 
@@ -161,7 +161,7 @@ namespace MyLisp.test
         {
             var parser = new Parser(sourceText);
             var statement = parser.ParseBracketedStatement();
-            var binder = new Binder(environment);
+            var binder = new Binder();
             var boundStatement = binder.Bind(statement);
             var evaluator = new Evaluator(environment);
 
