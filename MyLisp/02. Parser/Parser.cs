@@ -50,46 +50,49 @@ namespace MyLisp
         }
 
 
-        private SyntaxToken MatchToken(SyntaxKind kind)
+        private SyntaxToken MatchToken(SyntaxKind expecting)
         {
-            if (Current.Kind == kind)
+            if (Current.Kind == expecting)
                 return NextToken();
 
-            DiagnosticBag.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
-            return new SyntaxToken(kind, Current.Position, null, null);
+            DiagnosticBag.ReportUnexpectedToken(Current.Span, Current.Kind, expecting);
+            return new SyntaxToken(expecting, Current.Position, null, null);
 
         }
 
         public StatementSyntax ParseBracketedStatement()
         {
+            var result = default(StatementSyntax);
             switch (Peek(1).Kind)
             {
                 case SyntaxKind.PlusToken:
-                    return ParseCommand(SyntaxKind.PlusToken, CommandKind.PlusCommand);
+                    result = ParseCommand(SyntaxKind.PlusToken, CommandKind.PlusCommand);
+                    break;
 
                 case SyntaxKind.MinusToken:
-                    return ParseCommand(SyntaxKind.MinusToken, CommandKind.MinusCommand);
-
+                    result = ParseCommand(SyntaxKind.MinusToken, CommandKind.MinusCommand);
+                    break;
                 case SyntaxKind.SlashToken:
-                    return ParseCommand(SyntaxKind.SlashToken, CommandKind.DivideCommand);
-
+                    result = ParseCommand(SyntaxKind.SlashToken, CommandKind.DivideCommand);
+                    break;
                 case SyntaxKind.StarToken:
-                    return ParseCommand(SyntaxKind.StarToken, CommandKind.MultiplyCommand);
-
+                    result = ParseCommand(SyntaxKind.StarToken, CommandKind.MultiplyCommand);
+                    break;
                 case SyntaxKind.OnePlusToken:
-                    return ParseCommand(SyntaxKind.OnePlusToken, CommandKind.OnePlusCommand);
-
+                    result = ParseCommand(SyntaxKind.OnePlusToken, CommandKind.OnePlusCommand);
+                    break;
                 case SyntaxKind.OneMinusToken:
-                    return ParseCommand(SyntaxKind.OneMinusToken, CommandKind.OneMinusCommand);
-
+                    result = ParseCommand(SyntaxKind.OneMinusToken, CommandKind.OneMinusCommand);
+                    break;
                 case SyntaxKind.PercentToken:
-                    return ParseCommand(SyntaxKind.PercentToken, CommandKind.DividendDivisorCommand);
-
+                    result = ParseCommand(SyntaxKind.PercentToken, CommandKind.DividendDivisorCommand);
+                    break;
                 case SyntaxKind.IdentifierToken:
-                    return ParseCommand(SyntaxKind.IdentifierToken, CommandKind.FunctionCall);
-
-                //case SyntaxKind.DefFunKeyword:
-                //    return ParseFunction();
+                    result = ParseCommand(SyntaxKind.IdentifierToken, CommandKind.FunctionCall);
+                    break;
+                case SyntaxKind.CloseParenthesisToken:
+                    result = ParseEmptyCommand();
+                    break;
                 default:
                     DiagnosticBag.ReportUnexpectedToken(Peek(1).Span, Peek(1).Kind);
                     break;
@@ -97,7 +100,14 @@ namespace MyLisp
 
             var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
 
-            return null;
+            return result;
+        }
+
+        private EmptyStatementSyntax ParseEmptyCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new EmptyStatementSyntax(openToken, endToken);
         }
 
         private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, CommandKind commandToken)

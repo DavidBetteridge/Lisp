@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace MyLisp
@@ -20,38 +19,17 @@ namespace MyLisp
             _errors.Add(new Error(msg));
         }
 
-        internal void ReportBadCharacter(int position, char current)
+        internal void ReportUnexpectedToken(TextSpan span, SyntaxKind actual, SyntaxKind expecting)
         {
-            throw new NotImplementedException();
+            var msg = $@"Was expecting a {expecting} but got a {actual}.";
+            _errors.Add(new Error(msg));
         }
-
-        internal void ReportInvalidNumber(TextSpan textSpan, string text, Type type)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void ReportUnexpectedToken(object span, SyntaxKind kind1, SyntaxKind kind2)
-        {
-            throw new NotImplementedException();
-        }
-
-
 
         internal void ReportUnexpectedToken(TextSpan span, SyntaxKind kind)
         {
-            throw new Exception("ReportUnexpectedToken " + kind);
+            var msg = $@"Was given an unexpected {kind}";
+            _errors.Add(new Error(msg));
         }
-
-        internal void ReportTooManyArguments(TextSpan span, SyntaxKind kind, string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void ReportTooFewArguments(TextSpan span, SyntaxKind kind, string v)
-        {
-            throw new NotImplementedException();
-        }
-
 
     }
 }

@@ -9,6 +9,9 @@ namespace MyLisp
         {
             switch (statement.Kind)
             {
+                case CommandKind.Empty:
+                    return BindEmpty((EmptyStatementSyntax)statement);
+
                 case CommandKind.FunctionCall:
                     return BindFunctionCall((CommandStatementSyntax)statement);
 
@@ -42,6 +45,11 @@ namespace MyLisp
                 default:
                     throw new Exception($"Unexpected syntax {statement.Kind}");
             }
+        }
+
+        private BoundEmptyStatement BindEmpty(EmptyStatementSyntax statement)
+        {
+            return new BoundEmptyStatement();
         }
 
         private BoundIdentifierStatement BindIdentifier(IdentifierSyntax statement)

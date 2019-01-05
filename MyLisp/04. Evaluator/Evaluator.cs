@@ -7,6 +7,11 @@ namespace MyLisp
     {
         private Environment _environment;
 
+        private enum Constants
+        {
+            NIL,
+            T
+        }
         public Evaluator(Environment environment)
         {
             _environment = environment;
@@ -55,9 +60,17 @@ namespace MyLisp
                 case BoundNodeKind.ModCommand:
                     return EvaluateModCommand((BoundModStatement)boundStatement);
 
+                case BoundNodeKind.Empty:
+                    return EvaluateEmptyCommand((BoundEmptyStatement)boundStatement);
+
                 default:
                     throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
             }
+        }
+
+        private object EvaluateEmptyCommand(BoundEmptyStatement boundStatement)
+        {
+            return Constants.NIL;
         }
 
         private object EvaluateFunctionCall(BoundFunctionCallStatement boundStatement)

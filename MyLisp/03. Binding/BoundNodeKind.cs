@@ -14,6 +14,7 @@
         DefVarCommand = 9,
         Identifier = 10,
         DefFunCommand = 11,
-        FunctionCall=12
+        FunctionCall = 12,
+        Empty = 13
     }
 }

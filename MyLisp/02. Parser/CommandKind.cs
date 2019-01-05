@@ -14,6 +14,7 @@
         DefVarCommand,
         IdentifierExpression,
         DefFunCommand,
-        FunctionCall
+        FunctionCall,
+        Empty
     }
 }
