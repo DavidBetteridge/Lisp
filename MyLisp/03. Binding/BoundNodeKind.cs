@@ -15,6 +15,7 @@
         Identifier = 10,
         DefFunCommand = 11,
         FunctionCall = 12,
-        Empty = 13
+        Empty = 13,
+        IfCommand = 14
     }
 }

@@ -21,6 +21,9 @@ namespace MyLisp
         {
             switch (boundStatement.BoundNodeKind)
             {
+                case BoundNodeKind.IfCommand:
+                    return EvaluateIfCommand((BoundIfStatement)boundStatement);
+
                 case BoundNodeKind.FunctionCall:
                     return EvaluateFunctionCall((BoundFunctionCallStatement)boundStatement);
 
@@ -68,6 +71,15 @@ namespace MyLisp
             }
         }
 
+        private object EvaluateIfCommand(BoundIfStatement boundStatement)
+        {
+            var predicate = (bool)Evaluate(boundStatement.Predicate);
+            if (predicate)
+                return Evaluate(boundStatement.TrueBranch);
+            else
+                return Evaluate(boundStatement.FalseBranch);
+        }
+
         private object EvaluateEmptyCommand(BoundEmptyStatement boundStatement)
         {
             return Constants.NIL;
@@ -82,7 +94,7 @@ namespace MyLisp
                                 .ToArray();
 
             _environment = new Environment();
-            foreach (var (name,value) in arguments)
+            foreach (var (name, value) in arguments)
             {
                 _environment.Define(name, value, "");
             }
@@ -96,7 +108,7 @@ namespace MyLisp
 
         private object EvaluateDefFunCommand(BoundFunctionStatement boundStatement)
         {
-            var name = (string)boundStatement.FunctionName;
+            var name = boundStatement.FunctionName;
             var parameters = boundStatement.Parameters;
             var body = boundStatement.Body;
 
@@ -107,6 +119,9 @@ namespace MyLisp
 
         private object EvaluateIdentifier(BoundIdentifierStatement boundStatement)
         {
+            if (boundStatement.VariableName.ToLower() == "t") return true;
+            if (boundStatement.VariableName.ToLower() == "nil") return false;
+
             return _environment.Read(boundStatement.VariableName);
         }
 

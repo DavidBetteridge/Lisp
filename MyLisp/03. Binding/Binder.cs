@@ -80,9 +80,34 @@ namespace MyLisp
                 case "deffun":
                     return BindDefFunStatement(statement);
 
+                case "if":
+                    return BindIfStatement(statement);
+
                 default:
                     var args = statement.Statements.Select(Bind);
                     return new BoundFunctionCallStatement(functionName, args);
+            }
+        }
+
+        private BoundStatement BindIfStatement(CommandStatementSyntax statement)
+        {
+            //(if predicate true false)
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
+            switch (boundStatements.Length)
+            {
+                case 0:
+                case 1:
+                case 2:
+                    DiagnosticBag.ReportTooFewArguments(statement.Span, statement.Kind, "if");
+                    return new BoundEmptyStatement();
+                case 3:
+                    var predicate = boundStatements[0];
+                    var trueBranch = boundStatements[1];
+                    var falseBranch = boundStatements[2];
+                    return new BoundIfStatement(predicate, trueBranch, falseBranch);
+                default:
+                    DiagnosticBag.ReportTooManyArguments(statement.Span, statement.Kind, "if");
+                    return new BoundEmptyStatement();
             }
         }
 
