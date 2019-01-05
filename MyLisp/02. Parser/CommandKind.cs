@@ -15,6 +15,7 @@
         IdentifierExpression,
         DefFunCommand,
         FunctionCall,
-        Empty
+        Empty,
+        String
     }
 }

@@ -14,17 +14,21 @@ namespace MyLisp
 
         public SyntaxToken Command { get; }
 
+        public TextSpan Span { get; }
+
         public CommandStatementSyntax(SyntaxToken openToken, 
                                       SyntaxToken command, 
                                       ImmutableArray<StatementSyntax> statements, 
                                       SyntaxToken endToken,
-                                      CommandKind kind)
+                                      CommandKind kind,
+                                      TextSpan span)
         {
             _openToken = openToken;
             Command = command;
             Statements = statements;
             _endToken = endToken;
             _kind = kind;
+            this.Span = span;
         }
     }
 }

@@ -5,7 +5,7 @@
         private readonly string _text;
         private int _position;
 
-        public DiagnosticBag DiagnosticBag { get; } = new DiagnosticBag();
+        public DiagnosticBag DiagnosticBag { get; }
 
         private char Current => Peek(0);
 
@@ -21,6 +21,7 @@
         }
         public Lexer(string text)
         {
+            DiagnosticBag = new DiagnosticBag(text);
             _text = text;
         }
 

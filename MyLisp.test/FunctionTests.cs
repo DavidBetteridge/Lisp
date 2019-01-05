@@ -19,8 +19,8 @@ namespace MyLisp.test
         private static object RunSingleStatement(Environment environment, string sourceText)
         {
             var parser = new Parser(sourceText);
-            var statement = parser.ParseBracketedStatement();
-            var binder = new Binder();
+            var statement = parser.Parse();
+            var binder = new Binder(sourceText);
             var boundStatement = binder.Bind(statement);
             var evaluator = new Evaluator(environment);
 

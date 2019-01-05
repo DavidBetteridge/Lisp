@@ -5,6 +5,13 @@ namespace MyLisp
 {
     public class Binder
     {
+        public DiagnosticBag DiagnosticBag { get; }
+
+        public Binder(string sourceText)
+        {
+            DiagnosticBag = new DiagnosticBag(sourceText);
+        }
+
         public BoundStatement Bind(StatementSyntax statement)
         {
             switch (statement.Kind)
@@ -55,13 +62,7 @@ namespace MyLisp
         private BoundIdentifierStatement BindIdentifier(IdentifierSyntax statement)
         {
             var variableName = (string)statement.Value;
-            //if (!_environment.IsDefined(variableName))
-            //    throw new Exception($"The variable {variableName} has not been defined.");
-
-            //var type = _environment.ReadType(variableName);
-            var type = typeof(int);
-
-            return new BoundIdentifierStatement(variableName, type);
+            return new BoundIdentifierStatement(variableName);
         }
 
         private BoundStatement BindFunctionCall(CommandStatementSyntax statement)
@@ -91,7 +92,7 @@ namespace MyLisp
             var functionName = first.Value.ToString();
 
             var args = statement.Statements[1] as CommandStatementSyntax;
-            var firstArgument =new string[] { args.Command.Value.ToString() };
+            var firstArgument = new string[] { args.Command.Value.ToString() };
             var otherArguments = args.Statements.Cast<IdentifierSyntax>().Select(s => s.Value.ToString());
             var allArguments = firstArgument.Union(otherArguments);
 
@@ -110,55 +111,56 @@ namespace MyLisp
             if (statement.Statements.Count() > 1)
                 initialValue = Bind(statement.Statements[1]);
 
-            string documentation = "";
-            //if (statement.Statements.Count() > 2)
-            //    documentation = statement.Statements[2];
-
-            //_environment.Define(name, null, documentation);
+            var documentation = "";
+            if (statement.Statements.Count() > 2)
+            {
+                if (statement.Statements[2] is StringSyntax str)
+                    documentation = str.Text;
+                else
+                    DiagnosticBag.ReportWrongArgumentType(statement.Span, "DefVar", "Documentation", typeof(String), statement.Statements[2].GetType());
+            }
 
             return new BoundDefVarStatement(name, initialValue, documentation);
         }
 
-        private BoundOneMinusStatement BindOneMinusStatement(CommandStatementSyntax statement)
+        private BoundStatement BindOneMinusStatement(CommandStatementSyntax statement)
         {
             var statements = statement.Statements;
 
-            //switch (statements.Count())
-            //{
-            //    case 0:
-            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1-");
-            //        break;
-            //    case 1:
-            //        //All good
-            //        break;
-            //    default:
-            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1-");
-            //        break;
-            //}
+            switch (statements.Count())
+            {
+                case 0:
+                    DiagnosticBag.ReportTooFewArguments(statement.Span, statement.Kind, "1-");
+                    return new BoundEmptyStatement();
 
-            var boundStatement = Bind(statements.First());
-            return new BoundOneMinusStatement(boundStatement);
+                case 1:
+                    var boundStatement = Bind(statements.First());
+                    return new BoundOneMinusStatement(boundStatement);
+
+                default:
+                    DiagnosticBag.ReportTooManyArguments(statement.Span, statement.Kind, "1-");
+                    return new BoundEmptyStatement();
+            }
         }
 
-        private BoundOnePlusStatement BindOnePlusStatement(CommandStatementSyntax statement)
+        private BoundStatement BindOnePlusStatement(CommandStatementSyntax statement)
         {
             var statements = statement.Statements;
 
-            //switch (statements.Count())
-            //{
-            //    case 0:
-            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "1+");
-            //        break;
-            //    case 1:
-            //        //All good
-            //        break;
-            //    default:
-            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "1+");
-            //        break;
-            //}
+            switch (statements.Count())
+            {
+                case 0:
+                    DiagnosticBag.ReportTooFewArguments(statement.Span, statement.Kind, "1+");
+                    return new BoundEmptyStatement();
 
-            var boundStatement = Bind(statements.First());
-            return new BoundOnePlusStatement(boundStatement);
+                case 1:
+                    var boundStatement = Bind(statements.First());
+                    return new BoundOnePlusStatement(boundStatement);
+
+                default:
+                    DiagnosticBag.ReportTooManyArguments(statement.Span, statement.Kind, "1+");
+                    return new BoundEmptyStatement();
+            }
         }
 
         private BoundLiteralExpression BindLiteralExpression(LiteralExpressionSyntax statement)
@@ -168,69 +170,81 @@ namespace MyLisp
 
         private BoundPlusStatement BindPlusStatement(CommandStatementSyntax statement)
         {
-            var boundStatements = statement.Statements.Select(stat => Bind(stat));
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
             return new BoundPlusStatement(boundStatements);
         }
 
         private BoundMinusStatement BindMinusStatement(CommandStatementSyntax statement)
         {
-            var boundStatements = statement.Statements.Select(stat => Bind(stat));
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
             return new BoundMinusStatement(boundStatements);
         }
 
         private BoundMultiplyStatement BindMultiplyStatement(CommandStatementSyntax statement)
         {
-            var boundStatements = statement.Statements.Select(stat => Bind(stat));
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
             return new BoundMultiplyStatement(boundStatements);
         }
 
-        private BoundDividendDivisorStatement BindDividendDivisorStatement(CommandStatementSyntax statement)
+        private BoundStatement BindDividendDivisorStatement(CommandStatementSyntax statement)
         {
-            //switch (statements.Count())
-            //{
-            //    case 0:
-            //    case 1:
-            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "%");
-            //        break;
-            //    case 2:
-            //        //All good
-            //        break;
-            //    default:
-            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "%");
-            //        break;
-            //}
             var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
-            var lhs = boundStatements[0];
-            var rhs = boundStatements[1];
-            return new BoundDividendDivisorStatement(lhs, rhs);
+            switch (statement.Statements.Count())
+            {
+                case 0:
+                case 1:
+                    DiagnosticBag.ReportTooFewArguments(statement.Span, statement.Kind, "%");
+                    return new BoundEmptyStatement();
+
+                case 2:
+                    {
+                        var lhs = boundStatements[0];
+                        var rhs = boundStatements[1];
+
+                        return new BoundDividendDivisorStatement(lhs, rhs);
+                    }
+                default:
+                    {
+                        DiagnosticBag.ReportTooManyArguments(statement.Span, statement.Kind, "%");
+                        var lhs = boundStatements[0];
+                        var rhs = boundStatements[1];
+
+                        return new BoundDividendDivisorStatement(lhs, rhs);
+                    }
+            }
         }
 
-
-        private BoundModStatement BindModStatement(CommandStatementSyntax statement)
+        private BoundStatement BindModStatement(CommandStatementSyntax statement)
         {
-            //switch (statements.Count())
-            //{
-            //    case 0:
-            //    case 1:
-            //        _diagnostics.ReportTooFewArguments(Current.Span, Current.Kind, "%");
-            //        break;
-            //    case 2:
-            //        //All good
-            //        break;
-            //    default:
-            //        _diagnostics.ReportTooManyArguments(Current.Span, Current.Kind, "%");
-            //        break;
-            //}
             var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
-            var lhs = boundStatements[0];
-            var rhs = boundStatements[1];
+            switch (statement.Statements.Count())
+            {
+                case 0:
+                case 1:
+                    DiagnosticBag.ReportTooFewArguments(statement.Span, statement.Kind, "mod");
+                    return new BoundEmptyStatement();
 
-            return new BoundModStatement(lhs, rhs);
+                case 2:
+                    {
+                        var lhs = boundStatements[0];
+                        var rhs = boundStatements[1];
+
+                        return new BoundModStatement(lhs, rhs);
+                    }
+                default:
+                    {
+                        DiagnosticBag.ReportTooManyArguments(statement.Span, statement.Kind, "mod");
+                        var lhs = boundStatements[0];
+                        var rhs = boundStatements[1];
+
+                        return new BoundModStatement(lhs, rhs);
+                    }
+            }
         }
 
         private BoundDivideStatement BindDivideStatement(CommandStatementSyntax statement)
         {
-            var boundStatements = statement.Statements.Select(stat => Bind(stat));
+            var boundStatements = statement.Statements.Select(stat => Bind(stat)).ToArray();
             return new BoundDivideStatement(boundStatements);
         }
     }

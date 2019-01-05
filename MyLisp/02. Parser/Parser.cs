@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -6,11 +7,13 @@ namespace MyLisp
 {
     public class Parser
     {
-        public DiagnosticBag DiagnosticBag { get; } = new DiagnosticBag();
+        public DiagnosticBag DiagnosticBag { get; }
         private ImmutableArray<SyntaxToken> _tokens;
         private int _position;
         public Parser(string sourceText)
         {
+            DiagnosticBag = new DiagnosticBag(sourceText);
+
             var lexer = new Lexer(sourceText);
             var tokens = new List<SyntaxToken>();
             SyntaxToken token;
@@ -60,7 +63,14 @@ namespace MyLisp
 
         }
 
-        public StatementSyntax ParseBracketedStatement()
+        public StatementSyntax Parse()
+        {
+            var result = ParseBracketedStatement();
+            var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
+            return result;
+        }
+
+        private StatementSyntax ParseBracketedStatement()
         {
             var result = default(StatementSyntax);
             switch (Peek(1).Kind)
@@ -98,8 +108,6 @@ namespace MyLisp
                     break;
             }
 
-            var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-
             return result;
         }
 
@@ -116,7 +124,8 @@ namespace MyLisp
             var command = MatchToken(lexedToken);
             var statements = ParseStatements();
             var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new CommandStatementSyntax(openToken, command, statements.ToImmutable(), endToken, commandToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+            return new CommandStatementSyntax(openToken, command, statements.ToImmutable(), endToken, commandToken, fullSpan);
         }
 
         private ImmutableArray<StatementSyntax>.Builder ParseStatements()
@@ -147,10 +156,20 @@ namespace MyLisp
                 case SyntaxKind.IdentifierToken:
                     return ParseIdentifier();
 
+                case SyntaxKind.StringToken:
+                    return ParseStringToken();
+
                 default:
                     DiagnosticBag.ReportUnexpectedToken(Current.Span, Current.Kind);
+                    NextToken();
                     return null;
             }
+        }
+
+        private StatementSyntax ParseStringToken()
+        {
+            var token = MatchToken(SyntaxKind.StringToken);
+            return new StringSyntax(token);
         }
 
         private StatementSyntax ParseIdentifier()

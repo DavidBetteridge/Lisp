@@ -284,8 +284,10 @@ namespace MyLisp
         {
             if (value is int)
                 return Convert.ToDouble((int)value);
-            else
+            else if (value is double)
                 return (double)value;
+            else
+                return 0;
         }
     }
 }

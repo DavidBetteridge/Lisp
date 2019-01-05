@@ -15,27 +15,30 @@ namespace MyLisp
                 if (sourceText == "") return;
 
                 var parser = new Parser(sourceText);
-                if (!DisplayErrors(environment, parser))
+                if (!DisplayErrors(parser.DiagnosticBag))
                 {
-                    var statement = parser.ParseBracketedStatement();
-                    if (!DisplayErrors(environment, parser))
+                    var statement = parser.Parse();
+                    if (!DisplayErrors(parser.DiagnosticBag))
                     {
-                        var binder = new Binder();
+                        var binder = new Binder(sourceText);
                         var boundStatement = binder.Bind(statement);
 
-                        var evalulator = new Evaluator(environment);
-                        Console.WriteLine(evalulator.Evaluate(boundStatement));
+                        if (!DisplayErrors(binder.DiagnosticBag))
+                        {
+                            var evalulator = new Evaluator(environment);
+                            Console.WriteLine(evalulator.Evaluate(boundStatement));
+                        }
                     }
                 }
             }
         }
 
-        private static bool DisplayErrors(Environment environment, Parser parser)
+        private static bool DisplayErrors(DiagnosticBag  diagnosticBag)
         {
-            if (parser.DiagnosticBag.Errors.Any())
+            if (diagnosticBag.Errors.Any())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                foreach (var error in parser.DiagnosticBag.Errors)
+                foreach (var error in diagnosticBag.Errors)
                     Console.WriteLine(error.Message);
                 Console.ResetColor();
 
