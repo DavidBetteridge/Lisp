@@ -23,7 +23,7 @@ namespace MyLisp
             this.endToken = endToken;
         }
 
-        public override SyntaxKind Kind => SyntaxKind.DefFunCommand;
+        public override CommandKind Kind => CommandKind.DefFunCommand;
 
         public SyntaxToken FunctionName { get; set; }
         public List<SyntaxToken> Parameters { get; set; }

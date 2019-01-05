@@ -4,7 +4,7 @@ namespace MyLisp
 {
     class BoundFunctionStatement : BoundStatement
     {
-        public BoundFunctionStatement(SyntaxToken functionName, List<SyntaxToken> parameters, BoundStatement body)
+        public BoundFunctionStatement(string functionName, IEnumerable<string> parameters, BoundStatement body)
         {
             this.FunctionName = functionName;
             this.Parameters = parameters;
@@ -13,8 +13,8 @@ namespace MyLisp
 
         public override BoundNodeKind BoundNodeKind => BoundNodeKind.DefFunCommand;
 
-        public SyntaxToken FunctionName { get; set; }
-        public List<SyntaxToken> Parameters { get; set; }
+        public string FunctionName { get; set; }
+        public IEnumerable<string> Parameters { get; set; }
         public BoundStatement Body { get; set; }
     }
 }

@@ -9,65 +9,39 @@ namespace MyLisp
         {
             switch (statement.Kind)
             {
-                case SyntaxKind.FunctionCall:
+                case CommandKind.FunctionCall:
                     return BindFunctionCall((CommandStatementSyntax)statement);
 
-                case SyntaxKind.OnePlusCommand:
+                case CommandKind.OnePlusCommand:
                     return BindOnePlusStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.OneMinusCommand:
+                case CommandKind.OneMinusCommand:
                     return BindOneMinusStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.PlusCommand:
+                case CommandKind.PlusCommand:
                     return BindPlusStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.MinusCommand:
+                case CommandKind.MinusCommand:
                     return BindMinusStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.MultiplyCommand:
+                case CommandKind.MultiplyCommand:
                     return BindMultiplyStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.DivideCommand:
+                case CommandKind.DivideCommand:
                     return BindDivideStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.DividendDivisorCommand:
+                case CommandKind.DividendDivisorCommand:
                     return BindDividendDivisorStatement((CommandStatementSyntax)statement);
 
-                case SyntaxKind.DefVarCommand:
-                    return BindDefVarStatement((CommandStatementSyntax)statement);
-
-                case SyntaxKind.DefFunCommand:
-                    return BindDefFunStatement((FunctionSyntax)statement);
-
-                case SyntaxKind.ModCommand:
-                    return BindModStatement((CommandStatementSyntax)statement);
-
-                case SyntaxKind.LiteralExpression:
+                case CommandKind.LiteralExpression:
                     return BindLiteralExpression((LiteralExpressionSyntax)statement);
 
-                case SyntaxKind.IdentifierExpression:
+                case CommandKind.IdentifierExpression:
                     return BindIdentifier((IdentifierSyntax)statement);
 
                 default:
                     throw new Exception($"Unexpected syntax {statement.Kind}");
             }
-        }
-
-        private BoundFunctionCallStatement BindFunctionCall(CommandStatementSyntax statement)
-        {
-            var functionName = (string)statement.Command.Value;
-            var args = statement.Statements.Select(Bind);
-
-            return new BoundFunctionCallStatement(functionName, args);
-        }
-
-        private BoundFunctionStatement BindDefFunStatement(FunctionSyntax statement)
-        {
-            var functionName = statement.FunctionName;
-            var parameters = statement.Parameters;
-            var body = Bind(statement.Body);
-
-            return new BoundFunctionStatement(functionName, parameters, body);
         }
 
         private BoundIdentifierStatement BindIdentifier(IdentifierSyntax statement)
@@ -81,6 +55,44 @@ namespace MyLisp
 
             return new BoundIdentifierStatement(variableName, type);
         }
+
+        private BoundStatement BindFunctionCall(CommandStatementSyntax statement)
+        {
+            var functionName = (string)statement.Command.Value;
+
+            switch (functionName.ToLower())
+            {
+                case "mod":
+                    return BindModStatement(statement);
+
+                case "defvar":
+                    return BindDefVarStatement(statement);
+
+                case "deffun":
+                    return BindDefFunStatement(statement);
+
+                default:
+                    var args = statement.Statements.Select(Bind);
+                    return new BoundFunctionCallStatement(functionName, args);
+            }
+        }
+
+        private BoundFunctionStatement BindDefFunStatement(CommandStatementSyntax statement)
+        {
+            var first = statement.Statements[0] as IdentifierSyntax;
+            var functionName = first.Value.ToString();
+
+            var args = statement.Statements[1] as CommandStatementSyntax;
+            var firstArgument =new string[] { args.Command.Value.ToString() };
+            var otherArguments = args.Statements.Cast<IdentifierSyntax>().Select(s => s.Value.ToString());
+            var allArguments = firstArgument.Union(otherArguments);
+
+            var body = Bind(statement.Statements[2]);
+
+            return new BoundFunctionStatement(functionName, allArguments, body);
+        }
+
+
 
         private BoundDefVarStatement BindDefVarStatement(CommandStatementSyntax statement)
         {

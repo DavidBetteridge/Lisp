@@ -19,8 +19,7 @@ namespace MyLisp
             {
                 token = lexer.Lex();
 
-                if (token.Kind != SyntaxKind.WhitespaceToken &&
-                    token.Kind != SyntaxKind.BadToken)
+                if (token.Kind != SyntaxKind.BadToken)
                 {
                     tokens.Add(token);
                 }
@@ -63,37 +62,31 @@ namespace MyLisp
             switch (Peek(1).Kind)
             {
                 case SyntaxKind.PlusToken:
-                    return ParseCommand(SyntaxKind.PlusToken, SyntaxKind.PlusCommand);
+                    return ParseCommand(SyntaxKind.PlusToken, CommandKind.PlusCommand);
 
                 case SyntaxKind.MinusToken:
-                    return ParseCommand(SyntaxKind.MinusToken, SyntaxKind.MinusCommand);
+                    return ParseCommand(SyntaxKind.MinusToken, CommandKind.MinusCommand);
 
                 case SyntaxKind.SlashToken:
-                    return ParseCommand(SyntaxKind.SlashToken, SyntaxKind.DivideCommand);
+                    return ParseCommand(SyntaxKind.SlashToken, CommandKind.DivideCommand);
 
                 case SyntaxKind.StarToken:
-                    return ParseCommand(SyntaxKind.StarToken, SyntaxKind.MultiplyCommand);
+                    return ParseCommand(SyntaxKind.StarToken, CommandKind.MultiplyCommand);
 
                 case SyntaxKind.OnePlusToken:
-                    return ParseCommand(SyntaxKind.OnePlusToken, SyntaxKind.OnePlusCommand);
+                    return ParseCommand(SyntaxKind.OnePlusToken, CommandKind.OnePlusCommand);
 
                 case SyntaxKind.OneMinusToken:
-                    return ParseCommand(SyntaxKind.OneMinusToken, SyntaxKind.OneMinusCommand);
+                    return ParseCommand(SyntaxKind.OneMinusToken, CommandKind.OneMinusCommand);
 
                 case SyntaxKind.PercentToken:
-                    return ParseCommand(SyntaxKind.PercentToken, SyntaxKind.DividendDivisorCommand);
-
-                case SyntaxKind.ModKeyword:
-                    return ParseCommand(SyntaxKind.ModKeyword, SyntaxKind.ModCommand);
-
-                case SyntaxKind.DefVarKeyword:
-                    return ParseCommand(SyntaxKind.DefVarKeyword, SyntaxKind.DefVarCommand);
+                    return ParseCommand(SyntaxKind.PercentToken, CommandKind.DividendDivisorCommand);
 
                 case SyntaxKind.IdentifierToken:
-                    return ParseCommand(SyntaxKind.IdentifierToken, SyntaxKind.FunctionCall);
+                    return ParseCommand(SyntaxKind.IdentifierToken, CommandKind.FunctionCall);
 
-                case SyntaxKind.DefFunKeyword:
-                    return ParseFunction();
+                //case SyntaxKind.DefFunKeyword:
+                //    return ParseFunction();
                 default:
                     _diagnostics.ReportUnexpectedToken(Peek(1).Span, Peek(1).Kind);
                     break;
@@ -104,33 +97,7 @@ namespace MyLisp
             return null;
         }
 
-        private FunctionSyntax ParseFunction()
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(SyntaxKind.DefFunKeyword);
-            var functionName = MatchToken(SyntaxKind.IdentifierToken);
-
-            var parameterOpenToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var parameters = new List<SyntaxToken>();
-            while (Current.Kind != SyntaxKind.CloseParenthesisToken)
-            {
-                var parameter = MatchToken(SyntaxKind.IdentifierToken);
-                parameters.Add(parameter);
-            }
-            var parameterCloseToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-
-
-            var body = ParseBracketedStatement();
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-
-            return new FunctionSyntax(openToken, 
-                                      command,
-                                      functionName,
-                                      parameters, 
-                                      body,
-                                      endToken);
-        }
-        private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, SyntaxKind commandToken)
+        private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, CommandKind commandToken)
         {
             var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
             var command = MatchToken(lexedToken);

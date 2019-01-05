@@ -2,6 +2,6 @@
 {
     public abstract class StatementSyntax
     {
-        public abstract SyntaxKind Kind { get; }
+        public abstract CommandKind Kind { get; }
     }
 }

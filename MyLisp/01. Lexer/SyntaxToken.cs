@@ -2,8 +2,6 @@
 {
     public class SyntaxToken
     {
-        private readonly string _text;
-
         public SyntaxKind Kind { get; }
         public int Position { get; }
 
@@ -13,10 +11,12 @@
         {
             Kind = kind;
             Position = position;
-            _text = text;
+            Text = text;
             Value = value;
         }
 
-        public TextSpan Span => new TextSpan(Position, _text.Length);
+        public TextSpan Span => new TextSpan(Position, Text.Length);
+
+        public string Text { get; }
     }
 }

@@ -1,16 +1,13 @@
 ﻿namespace MyLisp
 {
-    class Lexer
+    public class Lexer
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
-        private readonly string _text;  //Use span
+        private readonly string _text;
         private int _position;
-        private int _start;
-        private SyntaxKind _kind;
 
-        private object _value;
         private char Current => Peek(0);
-        private char Lookahead => Peek(1);
+
         private char Peek(int offset)
         {
             var index = _position + offset;
@@ -26,155 +23,142 @@
 
         public SyntaxToken Lex()
         {
-            _start = _position;
-            _kind = SyntaxKind.BadToken;
-            _value = null;
+            SkipWhiteSpace();
 
-            switch (Current)
+            var start = _position;
+            var kind = SyntaxKind.BadToken;
+            object value = ReadNextToken();
+            switch (value)
             {
-                case '1' when Lookahead == '+':
-                    _kind = SyntaxKind.OnePlusToken;
-                    _position += 2;
+                case "\0":
+                    kind = SyntaxKind.EndOfFileToken;
                     break;
 
-                case '1' when Lookahead == '-':
-                    _kind = SyntaxKind.OneMinusToken;
-                    _position += 2;
+                case "(":
+                    kind = SyntaxKind.OpenParenthesisToken;
                     break;
 
-                case '\0':
-                    _kind = SyntaxKind.EndOfFileToken;
+                case ")":
+                    kind = SyntaxKind.CloseParenthesisToken;
                     break;
 
-                case '+':
-                    _kind = SyntaxKind.PlusToken;
+                case "+":
+                    kind = SyntaxKind.PlusToken;
+                    break;
+
+                case "-":
+                    kind = SyntaxKind.MinusToken;
+                    break;
+
+                case "/":
+                    kind = SyntaxKind.SlashToken;
+                    break;
+
+                case "*":
+                    kind = SyntaxKind.StarToken;
+                    break;
+
+                case "%":
+                    kind = SyntaxKind.PercentToken;
+                    break;
+
+                case "'":
+                    kind = SyntaxKind.QuoteToken;
+                    break;
+
+                case "1+":
+                    kind = SyntaxKind.OnePlusToken;
+                    break;
+
+                case "1-":
+                    kind = SyntaxKind.OneMinusToken;
+                    break;
+
+                default:
+                    if (int.TryParse((string)value, out var i))
+                    {
+                        kind = SyntaxKind.IntegerNumberToken;
+                        value = i;
+                    }
+
+                    else if (double.TryParse((string)value, out var d))
+                    {
+                        kind = SyntaxKind.FloatingPointNumberToken;
+                        value = d;
+                    }
+
+                    else if (((string)value).StartsWith(@""""))
+                        kind = SyntaxKind.StringToken;
+
+                    else
+                        kind = SyntaxKind.IdentifierToken;
+
+                    break;
+            }
+
+            //Unterminated strings
+            //Invalid identifiers 123...
+
+            var textLength = _position - start;
+            if (textLength + start > _text.Length) textLength--;  //exclude\0
+            return new SyntaxToken(kind, start, _text.Substring(start, textLength), value);
+        }
+
+        private string ReadNextToken()
+        {
+            string value = Current.ToString();
+            _position++;
+
+            switch (value)
+            {
+                case "\0":
+                    break;
+
+                case "(":
+                    break;
+
+                case ")":
+                    break;
+
+                case "'":
+                    break;
+
+                case @"""":
+                    while (Current != '"')
+                    {
+                        value += Current.ToString();
+                        _position++;
+                    }
+                    value += Current.ToString();
                     _position++;
-                    break;
-
-                case '%':
-                    _kind = SyntaxKind.PercentToken;
-                    _position++;
-                    break;
-
-                case '-' when Lookahead == ' ' || Lookahead == ')':
-                    _kind = SyntaxKind.MinusToken;
-                    _position++;
-                    break;
-
-                case '*':
-                    _kind = SyntaxKind.StarToken;
-                    _position++;
-                    break;
-
-                case '/':
-                    _kind = SyntaxKind.SlashToken;
-                    _position++;
-                    break;
-
-                case '(':
-                    _kind = SyntaxKind.OpenParenthesisToken;
-                    _position++;
-                    break;
-
-                case ')':
-                    _kind = SyntaxKind.CloseParenthesisToken;
-                    _position++;
-                    break;
-
-                case '-':
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    ReadNumber();
-                    break;
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
-                    ReadWhiteSpace();
                     break;
 
                 default:
 
-                    if (char.IsLetter(Current))
+                    while (Current != ' '
+                            && Current != '('
+                            && Current != ')'
+                            && Current != '\''
+                            && Current != '\0'
+                            && Current != '"'
+    )
                     {
-                        ReadIdentifierOrKeyword();
-                    }
-                    else if (char.IsWhiteSpace(Current))
-                    {
-                        ReadWhiteSpace();
-                    }
-                    else
-                    {
-                        _diagnostics.ReportBadCharacter(_position, Current);
+                        value += Current.ToString();
                         _position++;
                     }
                     break;
             }
 
-            var length = _position - _start;
-            var text = SyntaxFacts.GetText(_kind);
-            if (text == null)
-                text = _text.Substring(_start, length);
-
-            return new SyntaxToken(_kind, _start, text, _value);
+            return value;
         }
 
-        private void ReadNumber()
+        void SkipWhiteSpace()
         {
-            //TODO:  Refactor this so that it keeps eating tokens until it hits either whitespace or )
-            if (Current == '-')
+            while (Current == ' ')
                 _position++;
-
-            while (char.IsDigit(Current) || Current == '.')
-                _position++;
-
-            var length = _position - _start;
-            var text = _text.Substring(_start, length);
-
-            if (int.TryParse(text, out var integerValue))
-            {
-                _value = integerValue;
-                _kind = SyntaxKind.IntegerNumberToken;
-            }
-            else if (double.TryParse(text, out var doubleValue))
-            {
-                _value = doubleValue;
-                _kind = SyntaxKind.FloatingPointNumberToken;
-            }
-            else
-            {
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
-            }
-
-        }
-
-        private void ReadWhiteSpace()
-        {
-            while (char.IsWhiteSpace(Current))
-                _position++;
-
-            _kind = SyntaxKind.WhitespaceToken;
         }
 
 
-        private void ReadIdentifierOrKeyword()
-        {
-            while (char.IsLetter(Current))
-                _position++;
-
-            var length = _position - _start;
-            var text = _text.Substring(_start, length);
-            _value = text; 
-            _kind = SyntaxFacts.GetKeywordKind(text);
-        }
     }
 
 }

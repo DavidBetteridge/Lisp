@@ -6,11 +6,11 @@ namespace MyLisp
     {
         private readonly SyntaxToken _openToken;
         private readonly SyntaxToken _endToken;
-        private readonly SyntaxKind _kind;
+        private readonly CommandKind _kind;
 
         public ImmutableArray<StatementSyntax> Statements { get; }
 
-        public override SyntaxKind Kind => _kind;
+        public override CommandKind Kind => _kind;
 
         public SyntaxToken Command { get; }
 
@@ -18,7 +18,7 @@ namespace MyLisp
                                       SyntaxToken command, 
                                       ImmutableArray<StatementSyntax> statements, 
                                       SyntaxToken endToken,
-                                      SyntaxKind kind)
+                                      CommandKind kind)
         {
             _openToken = openToken;
             Command = command;

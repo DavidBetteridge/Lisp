@@ -18,6 +18,6 @@
 
         public object Value { get; }
 
-        public override SyntaxKind Kind => SyntaxKind.IdentifierExpression;
+        public override CommandKind Kind => CommandKind.IdentifierExpression;
     }
 }

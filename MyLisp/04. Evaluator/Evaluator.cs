@@ -83,8 +83,8 @@ namespace MyLisp
 
         private object EvaluateDefFunCommand(BoundFunctionStatement boundStatement)
         {
-            var name = (string)boundStatement.FunctionName.Value;
-            var parameters = boundStatement.Parameters.Select(parm => (string)parm.Value);
+            var name = (string)boundStatement.FunctionName;
+            var parameters = boundStatement.Parameters;
             var body = boundStatement.Body;
 
             _environment.DefineFunction(name, parameters, body);
