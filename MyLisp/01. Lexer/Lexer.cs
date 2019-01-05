@@ -2,11 +2,14 @@
 {
     public class Lexer
     {
-        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly string _text;
         private int _position;
 
+        public DiagnosticBag DiagnosticBag { get; } = new DiagnosticBag();
+
         private char Current => Peek(0);
+
+        private char Previous => Peek(-1);
 
         private char Peek(int offset)
         {
@@ -75,7 +78,7 @@
                     break;
 
                 default:
-                    if (int.TryParse((string)value, out var i))
+                    if (int.TryParse((string)value, out var i) && !((string)value).Contains("."))
                     {
                         kind = SyntaxKind.IntegerNumberToken;
                         value = i;
@@ -88,7 +91,9 @@
                     }
 
                     else if (((string)value).StartsWith(@""""))
+                    {
                         kind = SyntaxKind.StringToken;
+                    }
 
                     else
                         kind = SyntaxKind.IdentifierToken;
@@ -96,16 +101,14 @@
                     break;
             }
 
-            //Unterminated strings
-            //Invalid identifiers 123...
-
             var textLength = _position - start;
-            if (textLength + start > _text.Length) textLength--;  //exclude\0
+            if (textLength + start > _text.Length) textLength--;  //exclude \0
             return new SyntaxToken(kind, start, _text.Substring(start, textLength), value);
         }
 
         private string ReadNextToken()
         {
+            var start = _position;
             string value = Current.ToString();
             _position++;
 
@@ -124,13 +127,22 @@
                     break;
 
                 case @"""":
-                    while (Current != '"')
+                    while ((Current != '"' || Previous == '\\') && Current != '\0')
                     {
                         value += Current.ToString();
                         _position++;
                     }
-                    value += Current.ToString();
-                    _position++;
+
+                    if (Current == '\0')
+                    {
+                        DiagnosticBag.ReportUnterminatedString(start, value);
+                    }
+                    else
+                    {
+                        value += Current.ToString();
+                        _position++;
+                    }
+
                     break;
 
                 default:
@@ -150,6 +162,11 @@
             }
 
             return value;
+        }
+
+        private int CountNumberOf(string value, string c)
+        {
+            return value.Length - (value.Replace(c, "").Length);
         }
 
         void SkipWhiteSpace()

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -7,7 +6,7 @@ namespace MyLisp
 {
     public class Parser
     {
-        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        public DiagnosticBag DiagnosticBag { get; } = new DiagnosticBag();
         private ImmutableArray<SyntaxToken> _tokens;
         private int _position;
         public Parser(string sourceText)
@@ -26,6 +25,10 @@ namespace MyLisp
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
             _tokens = tokens.ToImmutableArray();
+
+            if (lexer.DiagnosticBag.Errors.Any())
+                DiagnosticBag.AppendErrors(lexer.DiagnosticBag.Errors);
+
         }
 
         private SyntaxToken Peek(int offset)
@@ -52,7 +55,7 @@ namespace MyLisp
             if (Current.Kind == kind)
                 return NextToken();
 
-            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
+            DiagnosticBag.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new SyntaxToken(kind, Current.Position, null, null);
 
         }
@@ -88,7 +91,7 @@ namespace MyLisp
                 //case SyntaxKind.DefFunKeyword:
                 //    return ParseFunction();
                 default:
-                    _diagnostics.ReportUnexpectedToken(Peek(1).Span, Peek(1).Kind);
+                    DiagnosticBag.ReportUnexpectedToken(Peek(1).Span, Peek(1).Kind);
                     break;
             }
 
@@ -135,7 +138,7 @@ namespace MyLisp
                     return ParseIdentifier();
 
                 default:
-                    _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind);
+                    DiagnosticBag.ReportUnexpectedToken(Current.Span, Current.Kind);
                     return null;
             }
         }

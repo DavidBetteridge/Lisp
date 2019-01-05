@@ -1,9 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace MyLisp
 {
-    internal class DiagnosticBag
+    public class DiagnosticBag
     {
+        private List<Error> _errors = new List<Error>();
+        public ImmutableArray<Error> Errors => _errors.ToImmutableArray();
+
+        internal void AppendErrors(ImmutableArray<Error> errors)
+        {
+            foreach (var error in errors)
+                _errors.Add(error);
+        }
+        internal void ReportUnterminatedString(int start, string text)
+        {
+            var msg = @"The string '" + text + "' is not terminated";
+            _errors.Add(new Error(msg));
+        }
+
         internal void ReportBadCharacter(int position, char current)
         {
             throw new NotImplementedException();
@@ -19,6 +35,8 @@ namespace MyLisp
             throw new NotImplementedException();
         }
 
+
+
         internal void ReportUnexpectedToken(TextSpan span, SyntaxKind kind)
         {
             throw new Exception("ReportUnexpectedToken " + kind);
@@ -33,5 +51,7 @@ namespace MyLisp
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

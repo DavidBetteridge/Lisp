@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Linq;
+using Xunit;
 
 namespace MyLisp.test
 {
@@ -70,5 +71,39 @@ namespace MyLisp.test
             Assert.Equal(SyntaxKind.CloseParenthesisToken, lexer.Lex().Kind);
             Assert.Equal(SyntaxKind.EndOfFileToken, lexer.Lex().Kind);
         }
+
+        [Fact]
+        public void ReportErrorsForUnterminatedStrings()
+        {
+            var sourceText = @"(length ""this is a string)";
+            var lexer = new Lexer(sourceText);
+
+            Assert.Equal(SyntaxKind.OpenParenthesisToken, lexer.Lex().Kind);
+            Assert.Equal(SyntaxKind.IdentifierToken, lexer.Lex().Kind);
+            Assert.Equal(SyntaxKind.StringToken, lexer.Lex().Kind);
+
+            var errors = lexer.DiagnosticBag.Errors;
+            Assert.Single(errors);
+            Assert.Equal(@"The string '""this is a string)' is not terminated", errors.First().Message);
+            Assert.Equal(SyntaxKind.EndOfFileToken, lexer.Lex().Kind);
+        }
+
+        [Fact]
+        public void AllowStringsToContainEscapedDoubleQuotes()
+        {
+            var sourceText = @"(length ""hello \""world"")";
+            var lexer = new Lexer(sourceText);
+
+            Assert.Equal(SyntaxKind.OpenParenthesisToken, lexer.Lex().Kind);
+            Assert.Equal(SyntaxKind.IdentifierToken, lexer.Lex().Kind);
+
+            var token = lexer.Lex();
+            Assert.Equal(SyntaxKind.StringToken, token.Kind);
+            Assert.Equal(@"""hello \""world""", token.Value);
+
+            Assert.Equal(SyntaxKind.CloseParenthesisToken, lexer.Lex().Kind);
+            Assert.Equal(SyntaxKind.EndOfFileToken, lexer.Lex().Kind);
+        }
+
     }
 }
