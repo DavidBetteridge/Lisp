@@ -38,7 +38,7 @@ namespace MyLisp
         {
             public string Name { get; set; }
             public IEnumerable<string> Parameters { get; set; }
-            public BoundStatement Body { get; set; }
+            public Statement Body { get; set; }
         }
 
         internal object Read(string name)
@@ -58,7 +58,7 @@ namespace MyLisp
             return value.Value?.GetType();
         }
 
-        internal void DefineFunction(string name, IEnumerable<string> parameters, BoundStatement body)
+        internal void DefineFunction(string name, IEnumerable<string> parameters, Statement body)
         {
             var function = new Function()
             {

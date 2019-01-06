@@ -1,6 +1,6 @@
 ﻿namespace MyLisp
 {
-    public enum BoundNodeKind
+    public enum NodeKind
     {
         Literal = 0,
         PlusCommand = 1,
@@ -16,6 +16,9 @@
         DefFunCommand = 11,
         FunctionCall = 12,
         Empty = 13,
-        IfCommand = 14
+        IfCommand = 14,
+        String = 15,
+        Integer = 16,
+        FloatingPoint = 17
     }
 }

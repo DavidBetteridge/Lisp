@@ -20,20 +20,14 @@ namespace MyLisp
                     var statement = parser.Parse();
                     if (!DisplayErrors(parser.DiagnosticBag))
                     {
-                        var binder = new Binder(sourceText);
-                        var boundStatement = binder.Bind(statement);
-
-                        if (!DisplayErrors(binder.DiagnosticBag))
-                        {
-                            var evalulator = new Evaluator(environment);
-                            Console.WriteLine(evalulator.Evaluate(boundStatement));
-                        }
+                        var evalulator = new Evaluator(environment);
+                        Console.WriteLine(evalulator.Evaluate(statement));
                     }
                 }
             }
         }
 
-        private static bool DisplayErrors(DiagnosticBag  diagnosticBag)
+        private static bool DisplayErrors(DiagnosticBag diagnosticBag)
         {
             if (diagnosticBag.Errors.Any())
             {

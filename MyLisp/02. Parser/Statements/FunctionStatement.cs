@@ -2,19 +2,19 @@
 
 namespace MyLisp
 {
-    class BoundFunctionStatement : BoundStatement
+    class FunctionStatement : Statement
     {
-        public BoundFunctionStatement(string functionName, IEnumerable<string> parameters, BoundStatement body)
+        public FunctionStatement(string functionName, IEnumerable<string> parameters, Statement body)
         {
             this.FunctionName = functionName;
             this.Parameters = parameters;
             this.Body = body;
         }
 
-        public override BoundNodeKind BoundNodeKind => BoundNodeKind.DefFunCommand;
+        public override NodeKind StatementNodeKind => NodeKind.DefFunCommand;
 
         public string FunctionName { get; set; }
         public IEnumerable<string> Parameters { get; set; }
-        public BoundStatement Body { get; set; }
+        public Statement Body { get; set; }
     }
 }

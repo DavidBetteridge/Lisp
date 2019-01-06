@@ -148,12 +148,9 @@ namespace MyLisp.test
             var environment = new Environment();
             var parser = new Parser(sourceText);
             var statement = parser.Parse();
-            var binder = new Binder(sourceText);
-            var boundStatement = binder.Bind(statement);
-
 
             var evalulator = new Evaluator(environment);
-            var actualResult = evalulator.Evaluate(boundStatement);
+            var actualResult = evalulator.Evaluate(statement);
             return actualResult;
         }
 
@@ -161,11 +158,9 @@ namespace MyLisp.test
         {
             var parser = new Parser(sourceText);
             var statement = parser.Parse();
-            var binder = new Binder(sourceText);
-            var boundStatement = binder.Bind(statement);
             var evaluator = new Evaluator(environment);
 
-            return evaluator.Evaluate(boundStatement);
+            return evaluator.Evaluate(statement);
         }
     }
 }

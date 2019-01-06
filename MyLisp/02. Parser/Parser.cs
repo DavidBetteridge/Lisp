@@ -63,42 +63,42 @@ namespace MyLisp
 
         }
 
-        public StatementSyntax Parse()
+        public Statement Parse()
         {
             var result = ParseBracketedStatement();
             var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
             return result;
         }
 
-        private StatementSyntax ParseBracketedStatement()
+        private Statement ParseBracketedStatement()
         {
-            var result = default(StatementSyntax);
+            var result = default(Statement);
             switch (Peek(1).Kind)
             {
                 case SyntaxKind.PlusToken:
-                    result = ParseCommand(SyntaxKind.PlusToken, CommandKind.PlusCommand);
+                    result = ParsePlusStatement();
                     break;
 
                 case SyntaxKind.MinusToken:
-                    result = ParseCommand(SyntaxKind.MinusToken, CommandKind.MinusCommand);
+                    result = ParseMinusStatement();
                     break;
                 case SyntaxKind.SlashToken:
-                    result = ParseCommand(SyntaxKind.SlashToken, CommandKind.DivideCommand);
+                    result = ParseDivideStatement();
                     break;
                 case SyntaxKind.StarToken:
-                    result = ParseCommand(SyntaxKind.StarToken, CommandKind.MultiplyCommand);
+                    result = ParseMultiplyStatement();
                     break;
                 case SyntaxKind.OnePlusToken:
-                    result = ParseCommand(SyntaxKind.OnePlusToken, CommandKind.OnePlusCommand);
+                    result = ParseOnePlusStatement();
                     break;
                 case SyntaxKind.OneMinusToken:
-                    result = ParseCommand(SyntaxKind.OneMinusToken, CommandKind.OneMinusCommand);
+                    result = ParseOneMinusStatement();
                     break;
                 case SyntaxKind.PercentToken:
-                    result = ParseCommand(SyntaxKind.PercentToken, CommandKind.DividendDivisorCommand);
+                    result = ParseDividendDivisorStatement();
                     break;
                 case SyntaxKind.IdentifierToken:
-                    result = ParseCommand(SyntaxKind.IdentifierToken, CommandKind.FunctionCall);
+                    result = ParseIdentifierStatement();
                     break;
                 case SyntaxKind.CloseParenthesisToken:
                     result = ParseEmptyCommand();
@@ -111,26 +111,246 @@ namespace MyLisp
             return result;
         }
 
-        private EmptyStatementSyntax ParseEmptyCommand()
+        private Statement ParseIdentifierStatement()
         {
             var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            return new EmptyStatementSyntax(openToken, endToken);
-        }
-
-        private CommandStatementSyntax ParseCommand(SyntaxKind lexedToken, CommandKind commandToken)
-        {
-            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var command = MatchToken(lexedToken);
+            var command = MatchToken(SyntaxKind.IdentifierToken);
             var statements = ParseStatements();
             var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
             var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
-            return new CommandStatementSyntax(openToken, command, statements.ToImmutable(), endToken, commandToken, fullSpan);
+
+            var functionName = (string)command.Value;
+            switch (functionName.ToLower())
+            {
+                case "mod":
+                    return ParseModStatement(openToken, command, statements, endToken, fullSpan);
+
+                case "defvar":
+                    return ParseDefVarStatement(openToken, command, statements, endToken, fullSpan);
+
+                case "deffun":
+                    return ParseDefFunStatement(openToken, command, statements, endToken, fullSpan);
+
+                case "if":
+                    return ParseIfStatement(openToken, command, statements, endToken, fullSpan);
+
+                default:
+                    return new FunctionCallStatement(functionName, statements);
+            }
         }
 
-        private ImmutableArray<StatementSyntax>.Builder ParseStatements()
+        private Statement ParseDefFunStatement(SyntaxToken openToken, SyntaxToken command, ImmutableArray<Statement>.Builder statements, SyntaxToken endToken, TextSpan fullSpan)
         {
-            var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+            var first = statements[0] as IdentifierStatement;
+            var functionName = first.VariableName;
+
+            //This is not good!
+            var args = statements[1] as FunctionCallStatement;
+            var firstArgument = new string[] { args.FunctionName };
+            var otherArguments = args.Args.Cast<IdentifierStatement>().Select(s => s.VariableName.ToString());
+            var allArguments = firstArgument.Union(otherArguments);
+
+            var body = statements[2];
+
+            return new FunctionStatement(functionName, allArguments, body);
+        }
+
+        private Statement ParseIfStatement(SyntaxToken openToken, SyntaxToken command, ImmutableArray<Statement>.Builder statements, SyntaxToken endToken, TextSpan fullSpan)
+        {
+            switch (statements.Count())
+            {
+                case 0:
+                case 1:
+                case 2:
+                    DiagnosticBag.ReportTooFewArguments(fullSpan, CommandKind.IfCommand, "if");
+                    return new EmptyStatement();
+                case 3:
+                    var predicate = statements[0];
+                    var trueBranch = statements[1];
+                    var falseBranch = statements[2];
+                    return new IfStatement(predicate, trueBranch, falseBranch);
+                default:
+                    DiagnosticBag.ReportTooManyArguments(fullSpan, CommandKind.IfCommand, "if");
+                    return new EmptyStatement();
+            }
+        }
+
+        private Statement ParseDefVarStatement(SyntaxToken openToken, SyntaxToken command, ImmutableArray<Statement>.Builder statements, SyntaxToken endToken, TextSpan fullSpan)
+        {
+            var name = (string)((IdentifierStatement)statements[0]).VariableName;
+
+            Statement initialValue = null;
+            if (statements.Count() > 1)
+                initialValue = statements[1];
+
+            var documentation = "";
+            if (statements.Count() > 2)
+            {
+                if (statements[2] is StringStatement str)
+                    documentation = str.Value;
+                else
+                    DiagnosticBag.ReportWrongArgumentType(fullSpan, "DefVar", "Documentation", typeof(String), statements[2].GetType());
+            }
+
+            return new DefVarStatement(name, initialValue, documentation);
+        }
+
+        private Statement ParseModStatement(SyntaxToken openToken, SyntaxToken command, ImmutableArray<Statement>.Builder statements, SyntaxToken endToken, TextSpan fullSpan)
+        {
+            switch (statements.Count())
+            {
+                case 0:
+                case 1:
+                    DiagnosticBag.ReportTooFewArguments(fullSpan, CommandKind.ModCommand, "mod");
+                    return new EmptyStatement();
+
+                case 2:
+                    {
+                        var lhs = statements[0];
+                        var rhs = statements[1];
+
+                        return new ModStatement(lhs, rhs);
+                    }
+                default:
+                    {
+                        DiagnosticBag.ReportTooManyArguments(fullSpan, CommandKind.ModCommand, "mod");
+                        var lhs = statements[0];
+                        var rhs = statements[1];
+
+                        return new ModStatement(lhs, rhs);
+                    }
+            }
+        }
+
+        private Statement ParseDividendDivisorStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.PercentToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+
+            switch (statements.Count())
+            {
+                case 0:
+                case 1:
+                    DiagnosticBag.ReportTooFewArguments(fullSpan, CommandKind.DividendDivisorCommand, "%");
+                    return new EmptyStatement();
+
+                case 2:
+                    {
+                        var lhs = statements[0];
+                        var rhs = statements[1];
+
+                        return new DividendDivisorStatement(lhs, rhs);
+                    }
+                default:
+                    {
+                        DiagnosticBag.ReportTooManyArguments(fullSpan, CommandKind.DividendDivisorCommand, "%");
+                        var lhs = statements[0];
+                        var rhs = statements[1];
+
+                        return new DividendDivisorStatement(lhs, rhs);
+                    }
+            }
+        }
+
+        private Statement ParseOnePlusStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.OnePlusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+
+            switch (statements.Count())
+            {
+                case 0:
+                    DiagnosticBag.ReportTooFewArguments(fullSpan, CommandKind.OnePlusCommand, "1+");
+                    return new EmptyStatement();
+
+                case 1:
+                    return new OnePlusStatement(statements[0]);
+
+                default:
+                    DiagnosticBag.ReportTooManyArguments(fullSpan, CommandKind.OnePlusCommand, "1+");
+                    return new EmptyStatement();
+            }
+        }
+
+        private Statement ParseOneMinusStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.OneMinusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+
+            switch (statements.Count())
+            {
+                case 0:
+                    DiagnosticBag.ReportTooFewArguments(fullSpan, CommandKind.OneMinusCommand, "1-");
+                    return new EmptyStatement();
+
+                case 1:
+                    return new OneMinusStatement(statements[0]);
+
+                default:
+                    DiagnosticBag.ReportTooManyArguments(fullSpan, CommandKind.OneMinusCommand, "1-");
+                    return new EmptyStatement();
+            }
+        }
+
+        private PlusStatement ParsePlusStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.PlusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+            return new PlusStatement(statements);
+        }
+
+        private MinusStatement ParseMinusStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.MinusToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+            return new MinusStatement(statements);
+        }
+
+        private DivideStatement ParseDivideStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.SlashToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+            return new DivideStatement(statements);
+        }
+
+        private MultiplyStatement ParseMultiplyStatement()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var command = MatchToken(SyntaxKind.StarToken);
+            var statements = ParseStatements();
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            var fullSpan = new TextSpan(openToken.Span.Start, endToken.Span.End - openToken.Span.Start);
+            return new MultiplyStatement(statements);
+        }
+        private EmptyStatement ParseEmptyCommand()
+        {
+            var openToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var endToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            return new EmptyStatement();
+        }
+
+
+        private ImmutableArray<Statement>.Builder ParseStatements()
+        {
+            var statements = ImmutableArray.CreateBuilder<Statement>();
             while (Current.Kind != SyntaxKind.CloseParenthesisToken && Current.Kind != SyntaxKind.EndOfFileToken)
             {
                 var statement = ParseStatement();
@@ -140,7 +360,7 @@ namespace MyLisp
             return statements;
         }
 
-        private StatementSyntax ParseStatement()
+        private Statement ParseStatement()
         {
             switch (Current.Kind)
             {
@@ -166,28 +386,28 @@ namespace MyLisp
             }
         }
 
-        private StatementSyntax ParseStringToken()
+        private StringStatement ParseStringToken()
         {
             var token = MatchToken(SyntaxKind.StringToken);
-            return new StringSyntax(token);
+            return new StringStatement(token.Text);
         }
 
-        private StatementSyntax ParseIdentifier()
+        private IdentifierStatement ParseIdentifier()
         {
             var token = MatchToken(SyntaxKind.IdentifierToken);
-            return new IdentifierSyntax(token);
+            return new IdentifierStatement(token.Text);
         }
 
-        private StatementSyntax ParseNumberLiteral()
+        private NumericStatement ParseNumberLiteral()
         {
             var numberToken = MatchToken(SyntaxKind.IntegerNumberToken);
-            return new LiteralExpressionSyntax(numberToken);
+            return new NumericStatement((int)numberToken.Value);
         }
 
-        private StatementSyntax ParseFloatingPointNumberLiteral()
+        private FloatingPointStatement ParseFloatingPointNumberLiteral()
         {
             var numberToken = MatchToken(SyntaxKind.FloatingPointNumberToken);
-            return new LiteralExpressionSyntax(numberToken);
+            return new FloatingPointStatement((double)numberToken.Value);
         }
     }
 }

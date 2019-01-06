@@ -17,61 +17,77 @@ namespace MyLisp
             _environment = environment;
         }
 
-        public object Evaluate(BoundStatement boundStatement)
+        public object Evaluate(Statement boundStatement)
         {
-            switch (boundStatement.BoundNodeKind)
+            switch (boundStatement.StatementNodeKind)
             {
-                case BoundNodeKind.IfCommand:
-                    return EvaluateIfCommand((BoundIfStatement)boundStatement);
+                case NodeKind.IfCommand:
+                    return EvaluateIfCommand((IfStatement)boundStatement);
 
-                case BoundNodeKind.FunctionCall:
-                    return EvaluateFunctionCall((BoundFunctionCallStatement)boundStatement);
+                case NodeKind.FunctionCall:
+                    return EvaluateFunctionCall((FunctionCallStatement)boundStatement);
 
-                case BoundNodeKind.Identifier:
-                    return EvaluateIdentifier((BoundIdentifierStatement)boundStatement);
+                case NodeKind.Identifier:
+                    return EvaluateIdentifier((IdentifierStatement)boundStatement);
 
-                case BoundNodeKind.DefVarCommand:
-                    return EvaluateDefVarCommand((BoundDefVarStatement)boundStatement);
+                case NodeKind.DefVarCommand:
+                    return EvaluateDefVarCommand((DefVarStatement)boundStatement);
 
-                case BoundNodeKind.DefFunCommand:
-                    return EvaluateDefFunCommand((BoundFunctionStatement)boundStatement);
+                case NodeKind.DefFunCommand:
+                    return EvaluateDefFunCommand((FunctionStatement)boundStatement);
 
-                case BoundNodeKind.Literal:
-                    return ((BoundLiteralExpression)boundStatement).Value;
+                case NodeKind.Literal:
+                    return ((LiteralExpression)boundStatement).Value;
 
-                case BoundNodeKind.OnePlusCommand:
-                    return EvaluateOnePlusCommand((BoundOnePlusStatement)boundStatement);
+                case NodeKind.OnePlusCommand:
+                    return EvaluateOnePlusCommand((OnePlusStatement)boundStatement);
 
-                case BoundNodeKind.OneMinusCommand:
-                    return EvaluateOneMinusCommand((BoundOneMinusStatement)boundStatement);
+                case NodeKind.OneMinusCommand:
+                    return EvaluateOneMinusCommand((OneMinusStatement)boundStatement);
 
-                case BoundNodeKind.PlusCommand:
-                    return EvaluatePlusCommand((BoundPlusStatement)boundStatement);
+                case NodeKind.PlusCommand:
+                    return EvaluatePlusCommand((PlusStatement)boundStatement);
 
-                case BoundNodeKind.MinusCommand:
-                    return EvaluateMinusCommand((BoundMinusStatement)boundStatement);
+                case NodeKind.MinusCommand:
+                    return EvaluateMinusCommand((MinusStatement)boundStatement);
 
-                case BoundNodeKind.MultiplyCommand:
-                    return EvaluateMultiplyCommand((BoundMultiplyStatement)boundStatement);
+                case NodeKind.MultiplyCommand:
+                    return EvaluateMultiplyCommand((MultiplyStatement)boundStatement);
 
-                case BoundNodeKind.DividendDivisorCommand:
-                    return EvaluateDividendDivisorCommand((BoundDividendDivisorStatement)boundStatement);
+                case NodeKind.DividendDivisorCommand:
+                    return EvaluateDividendDivisorCommand((DividendDivisorStatement)boundStatement);
 
-                case BoundNodeKind.DivideCommand:
-                    return EvaluateDivideCommand((BoundDivideStatement)boundStatement);
+                case NodeKind.DivideCommand:
+                    return EvaluateDivideCommand((DivideStatement)boundStatement);
 
-                case BoundNodeKind.ModCommand:
-                    return EvaluateModCommand((BoundModStatement)boundStatement);
+                case NodeKind.ModCommand:
+                    return EvaluateModCommand((ModStatement)boundStatement);
 
-                case BoundNodeKind.Empty:
-                    return EvaluateEmptyCommand((BoundEmptyStatement)boundStatement);
+                case NodeKind.Empty:
+                    return EvaluateEmptyCommand((EmptyStatement)boundStatement);
+
+                case NodeKind.Integer:
+                    return EvaluateInteger((NumericStatement)boundStatement);
+
+                case NodeKind.FloatingPoint:
+                    return EvaluateFloatingPoint((FloatingPointStatement)boundStatement);
 
                 default:
-                    throw new System.Exception("Unknown bound node " + boundStatement.BoundNodeKind);
+                    throw new System.Exception("Unknown bound node " + boundStatement.StatementNodeKind);
             }
         }
 
-        private object EvaluateIfCommand(BoundIfStatement boundStatement)
+        private object EvaluateFloatingPoint(FloatingPointStatement boundStatement)
+        {
+            return boundStatement.Value;
+        }
+
+        private object EvaluateInteger(NumericStatement boundStatement)
+        {
+            return boundStatement.Value;
+        }
+
+        private object EvaluateIfCommand(IfStatement boundStatement)
         {
             var predicate = (bool)Evaluate(boundStatement.Predicate);
             if (predicate)
@@ -80,12 +96,12 @@ namespace MyLisp
                 return Evaluate(boundStatement.FalseBranch);
         }
 
-        private object EvaluateEmptyCommand(BoundEmptyStatement boundStatement)
+        private object EvaluateEmptyCommand(EmptyStatement boundStatement)
         {
             return Constants.NIL;
         }
 
-        private object EvaluateFunctionCall(BoundFunctionCallStatement boundStatement)
+        private object EvaluateFunctionCall(FunctionCallStatement boundStatement)
         {
             var currentEnvironment = _environment;
             var functionCall = _environment.GetFunction(boundStatement.FunctionName);
@@ -106,7 +122,7 @@ namespace MyLisp
             return result;
         }
 
-        private object EvaluateDefFunCommand(BoundFunctionStatement boundStatement)
+        private object EvaluateDefFunCommand(FunctionStatement boundStatement)
         {
             var name = boundStatement.FunctionName;
             var parameters = boundStatement.Parameters;
@@ -117,7 +133,7 @@ namespace MyLisp
             return name;
         }
 
-        private object EvaluateIdentifier(BoundIdentifierStatement boundStatement)
+        private object EvaluateIdentifier(IdentifierStatement boundStatement)
         {
             if (boundStatement.VariableName.ToLower() == "t") return true;
             if (boundStatement.VariableName.ToLower() == "nil") return false;
@@ -125,7 +141,7 @@ namespace MyLisp
             return _environment.Read(boundStatement.VariableName);
         }
 
-        private object EvaluateDefVarCommand(BoundDefVarStatement boundStatement)
+        private object EvaluateDefVarCommand(DefVarStatement boundStatement)
         {
             if (_environment.IsSet(boundStatement.Name))
             {
@@ -139,7 +155,7 @@ namespace MyLisp
             }
         }
 
-        private object EvaluateModCommand(BoundModStatement boundStatement)
+        private object EvaluateModCommand(ModStatement boundStatement)
         {
             var lhs = Evaluate(boundStatement.BoundDividendStatement);
             var rhs = Evaluate(boundStatement.BoundDivisorStatement);
@@ -158,7 +174,7 @@ namespace MyLisp
         }
 
 
-        private int EvaluateDividendDivisorCommand(BoundDividendDivisorStatement boundStatement)
+        private int EvaluateDividendDivisorCommand(DividendDivisorStatement boundStatement)
         {
             var lhs = (int)Evaluate(boundStatement.BoundDividendStatement);
             var rhs = (int)Evaluate(boundStatement.BoundDivisorStatement);
@@ -166,7 +182,7 @@ namespace MyLisp
             return lhs % rhs;
         }
 
-        private object EvaluateOnePlusCommand(BoundOnePlusStatement boundStatement)
+        private object EvaluateOnePlusCommand(OnePlusStatement boundStatement)
         {
             var rhs = Evaluate(boundStatement.BoundStatement);
             if (rhs is int)
@@ -175,7 +191,7 @@ namespace MyLisp
                 return (double)rhs + 1.0;
         }
 
-        private object EvaluateOneMinusCommand(BoundOneMinusStatement boundStatement)
+        private object EvaluateOneMinusCommand(OneMinusStatement boundStatement)
         {
             var rhs = Evaluate(boundStatement.BoundStatement);
             if (rhs is int)
@@ -184,7 +200,7 @@ namespace MyLisp
                 return (double)rhs - 1.0;
         }
 
-        private object EvaluatePlusCommand(BoundPlusStatement boundStatement)
+        private object EvaluatePlusCommand(PlusStatement boundStatement)
         {
             var evaluated = boundStatement.BoundStatements.Select(Evaluate);
             var allInts = evaluated.All(v => v is int);
@@ -195,7 +211,7 @@ namespace MyLisp
                 return evaluated.Sum(stat => ForceToDouble(stat));
         }
 
-        private object EvaluateMinusCommand(BoundMinusStatement boundStatement)
+        private object EvaluateMinusCommand(MinusStatement boundStatement)
         {
             var evaluated = boundStatement.BoundStatements.Select(Evaluate);
             var allInts = evaluated.All(v => v is int);
@@ -230,7 +246,7 @@ namespace MyLisp
             }
         }
 
-        private object EvaluateMultiplyCommand(BoundMultiplyStatement boundStatement)
+        private object EvaluateMultiplyCommand(MultiplyStatement boundStatement)
         {
             var evaluated = boundStatement.BoundStatements.Select(Evaluate);
             var allInts = evaluated.All(v => v is int);
@@ -263,7 +279,7 @@ namespace MyLisp
             }
         }
 
-        private object EvaluateDivideCommand(BoundDivideStatement boundStatement)
+        private object EvaluateDivideCommand(DivideStatement boundStatement)
         {
             var evaluated = boundStatement.BoundStatements.Select(Evaluate);
             var allInts = evaluated.All(v => v is int);

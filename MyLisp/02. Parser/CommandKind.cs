@@ -16,6 +16,7 @@
         DefFunCommand,
         FunctionCall,
         Empty,
-        String
+        String,
+        IfCommand
     }
 }
